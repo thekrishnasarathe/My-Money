@@ -1,0 +1,70 @@
+name: my_money
+description: My-Money - Personal Finance Manager by Krishna Sarathe
+publish_to: 'none'
+version: 1.1.0+2
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  provider: ^6.1.1
+
+  # Database
+  sqflite: ^2.3.2
+  path: ^1.9.0
+
+  # Firebase (Remote Device Control)
+  firebase_core: ^2.27.1
+  firebase_auth: ^4.17.9
+  cloud_firestore: ^4.15.9
+
+  # Local Auth - PIN + Biometric
+  local_auth: ^2.1.8
+  crypto: ^3.0.3
+
+  # Persistent Storage
+  shared_preferences: ^2.2.2
+  flutter_secure_storage: ^9.2.4
+
+  # Charts
+  fl_chart: ^0.68.0
+
+  # PDF & CSV Export
+  pdf: ^3.10.8
+  printing: ^5.13.1
+  csv: ^6.0.0
+
+  # Notifications (budget alerts)
+  flutter_local_notifications: ^17.1.2
+
+  # Date formatting
+  intl: ^0.19.0
+
+  # Device ID (for remote control)
+  device_info_plus: ^10.1.0
+
+  # UUID generator
+  uuid: ^4.3.3
+
+  # File handling & sharing
+  path_provider: ^2.1.2
+  share_plus: ^9.0.0
+
+  # HTTP Client for AI Backend Service
+  http: ^1.2.0
+
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/

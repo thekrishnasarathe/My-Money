@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>MONEY — Everything Inside the App</title>
+<style>
+:root{
+  --ink:#12151A;
+  --ink-2:#1B2028;
+  --paper:#FAF8F3;
+  --paper-2:#F1EDE3;
+  --cream-text:#2A2E33;
+  --white:#FFFFFF;
+  --emerald:#22A66E;
+  --emerald-deep:#158056;
+  --emerald-glow:rgba(34,166,110,0.18);
+  --crimson:#E5534B;
+  --gold:#D9A441;
+  --line-dark:rgba(255,255,255,0.10);
+  --line-light:rgba(20,20,20,0.10);
+  --muted-dark:#8A93A0;
+  --muted-light:#6B7280;
+  --display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --sans: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Consolas, monospace;
+}
+ 
+*{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:var(--sans);
+  background:var(--paper);
+  color:var(--cream-text);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto;}
+  *{animation-duration:0.01ms !important; transition-duration:0.01ms !important;}
+}
+img,svg{max-width:100%; display:block;}
+a{color:inherit;}
+ 
+/* ===== progress rail ===== */
+#rail{position:fixed; top:0; left:0; right:0; height:3px; background:rgba(0,0,0,0.06); z-index:500;}
+#rail-fill{height:100%; width:0%; background:linear-gradient(90deg,var(--emerald-deep),var(--emerald)); transition:width .06s linear;}
+ 
+/* ===== reveal on scroll ===== */
+.reveal{opacity:0; transform:translateY(18px); transition:opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1);}
+.reveal.in{opacity:1; transform:translateY(0);}
+.reveal-stagger > *{opacity:0; transform:translateY(14px); transition:opacity .6s ease, transform .6s ease;}
+.reveal-stagger.in > *{opacity:1; transform:translateY(0);}
+.reveal-stagger.in > *:nth-child(1){transition-delay:.02s;}
+.reveal-stagger.in > *:nth-child(2){transition-delay:.09s;}
+.reveal-stagger.in > *:nth-child(3){transition-delay:.16s;}
+.reveal-stagger.in > *:nth-child(4){transition-delay:.23s;}
+.reveal-stagger.in > *:nth-child(5){transition-delay:.30s;}
+.reveal-stagger.in > *:nth-child(6){transition-delay:.37s;}
+.reveal-stagger.in > *:nth-child(7){transition-delay:.44s;}
+.reveal-stagger.in > *:nth-child(8){transition-delay:.51s;}
+ 
+/* ===== wrap widths ===== */
+.wrap{max-width:1080px; margin:0 auto; padding-left:22px; padding-right:22px;}
+@media (min-width:700px){.wrap{padding-left:40px; padding-right:40px;}}
+ 
+/* ==================== HERO (dark) ==================== */
+.hero{
+  background:
+    radial-gradient(90% 60% at 20% 0%, rgba(34,166,110,0.20), transparent 60%),
+    radial-gradient(70% 50% at 100% 10%, rgba(217,164,65,0.10), transparent 55%),
+    var(--ink);
+  color:var(--white);
+  padding:64px 0 56px;
+  position:relative;
+  overflow:hidden;
+}
+.hero::after{
+  content:""; position:absolute; inset:0; pointer-events:none; opacity:0.5;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size:34px 34px;
+  mask-image:radial-gradient(70% 60% at 30% 20%, black, transparent);
+}
+.hero-inner{position:relative; z-index:2;}
+.eyebrow{
+  font-family:var(--mono); font-size:11px; letter-spacing:0.14em; text-transform:uppercase;
+  color:var(--emerald); display:flex; align-items:center; gap:8px; margin-bottom:22px;
+}
+.eyebrow .dot{width:6px; height:6px; border-radius:50%; background:var(--emerald); box-shadow:0 0 12px var(--emerald);}
+.hero h1{
+  font-family:var(--display); font-weight:600; font-size:clamp(2.4rem, 10vw, 4.2rem);
+  line-height:1.02; letter-spacing:-0.01em;
+}
+.hero h1 .accent{color:var(--emerald); font-style:italic;}
+.hero-lead{
+  font-size:16.5px; color:#C6CCD3; max-width:520px; margin-top:20px; line-height:1.65;
+}
+.hero-badges{display:flex; flex-wrap:wrap; gap:9px; margin-top:28px;}
+.hero-badge{
+  font-family:var(--mono); font-size:11px; color:#D6DCE1; border:1px solid var(--line-dark);
+  padding:7px 12px; border-radius:100px; background:rgba(255,255,255,0.03);
+}
+.hero-scroll-cue{
+  margin-top:44px; display:flex; align-items:center; gap:10px; font-family:var(--mono);
+  font-size:11px; color:var(--muted-dark); text-transform:uppercase; letter-spacing:0.08em;
+}
+.hero-scroll-cue .arrow{animation:bob 1.8s ease-in-out infinite;}
+@keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(5px);}}
+ 
+/* ==================== SECTION SCAFFOLD ==================== */
+section{padding:58px 0;}
+.section-eyebrow{
+  font-family:var(--mono); font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
+  color:var(--emerald-deep); margin-bottom:12px; display:flex; align-items:center; gap:9px;
+}
+.section-eyebrow .num{
+  width:22px; height:22px; border-radius:50%; background:var(--emerald); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:10.5px; font-weight:700;
+}
+h2.section-title{
+  font-family:var(--display); font-weight:600; font-size:clamp(1.7rem, 6vw, 2.6rem);
+  letter-spacing:-0.01em; color:var(--ink); line-height:1.08; margin-bottom:14px;
+}
+.section-dek{color:var(--muted-light); font-size:15.5px; max-width:600px; margin-bottom:30px; line-height:1.6;}
+.transition-line{
+  font-family:var(--display); font-style:italic; font-size:15.5px; color:var(--emerald-deep);
+  margin-top:36px; padding-top:22px; border-top:1px dashed var(--line-light);
+}
+ 
+p{font-size:15px; color:var(--cream-text); margin-bottom:12px;}
+strong{color:var(--ink); font-weight:700;}
+ 
+/* dark section variant */
+.dark-sec{background:var(--ink); color:var(--white);}
+.dark-sec .section-title{color:var(--white);}
+.dark-sec .section-dek{color:var(--muted-dark);}
+.dark-sec p{color:#C6CCD3;}
+.dark-sec strong{color:#fff;}
+ 
+/* ==================== WHAT IS IT ==================== */
+.what-card{
+  background:var(--white); border:1px solid var(--line-light); border-radius:18px;
+  padding:24px 22px; box-shadow:0 1px 2px rgba(20,20,20,0.03);
+}
+.what-card p{font-size:16px; line-height:1.7;}
+.what-card p:last-child{margin-bottom:0;}
+.pill-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:20px;}
+.pill{
+  font-family:var(--mono); font-size:11.5px; background:var(--emerald-glow); color:var(--emerald-deep);
+  padding:6px 13px; border-radius:100px; font-weight:600;
+}
+ 
+/* ==================== FEATURES ==================== */
+.feature-grid{display:grid; grid-template-columns:1fr; gap:14px;}
+@media (min-width:640px){.feature-grid{grid-template-columns:1fr 1fr;}}
+.feature-card{
+  background:var(--white); border:1px solid var(--line-light); border-radius:16px; padding:22px 20px;
+  transition:transform .25s ease, box-shadow .25s ease;
+}
+.feature-card:active{transform:scale(0.98);}
+@media (hover:hover){
+  .feature-card:hover{transform:translateY(-3px); box-shadow:0 12px 28px rgba(20,20,20,0.07);}
+}
+.feature-icon{
+  width:42px; height:42px; border-radius:11px; background:var(--emerald-glow);
+  display:flex; align-items:center; justify-content:center; margin-bottom:14px; font-size:19px;
+}
+.feature-card h3{font-family:var(--sans); font-weight:700; font-size:15.5px; color:var(--ink); margin-bottom:7px;}
+.feature-card p{font-size:13.7px; color:var(--muted-light); margin-bottom:0; line-height:1.55;}
+ 
+/* ==================== HOW TO USE - flow steps ==================== */
+.flow{position:relative; padding-left:30px;}
+.flow::before{
+  content:""; position:absolute; left:10px; top:6px; bottom:6px; width:2px;
+  background:linear-gradient(var(--emerald), var(--line-light));
+}
+.flow-step{position:relative; padding-bottom:30px;}
+.flow-step:last-child{padding-bottom:0;}
+.flow-step::before{
+  content:""; position:absolute; left:-30px; top:2px; width:22px; height:22px; border-radius:50%;
+  background:var(--white); border:2.5px solid var(--emerald); z-index:2;
+}
+.flow-step .fnum{
+  position:absolute; left:-30px; top:2px; width:22px; height:22px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:10px;
+  font-weight:700; color:var(--emerald-deep); z-index:3;
+}
+.flow-step h4{font-family:var(--sans); font-weight:700; font-size:15px; color:var(--ink); margin-bottom:5px;}
+.flow-step p{font-size:13.8px; color:var(--muted-light); margin-bottom:0;}
+.flow-tip{
+  display:inline-block; margin-top:8px; font-family:var(--mono); font-size:11px; color:var(--emerald-deep);
+  background:var(--emerald-glow); padding:4px 10px; border-radius:6px;
+}
+ 
+/* ==================== TECH STACK ==================== */
+.stack-tower{display:flex; flex-direction:column; gap:8px;}
+.stack-layer{
+  background:var(--ink-2); border:1px solid var(--line-dark); border-radius:14px;
+  padding:16px 18px; display:flex; align-items:center; gap:14px;
+  transition:transform .2s ease;
+}
+.stack-layer:active{transform:scale(0.985);}
+.sl-tag{
+  font-family:var(--mono); font-size:10px; color:var(--ink); background:var(--emerald);
+  padding:3px 8px; border-radius:5px; font-weight:700; flex-shrink:0; white-space:nowrap;
+}
+.sl-body{min-width:0;}
+.sl-body .name{font-weight:700; font-size:14.5px; color:#fff;}
+.sl-body .desc{font-size:12.5px; color:var(--muted-dark); margin-top:2px;}
+ 
+/* ==================== PLATFORMS ==================== */
+.platform-grid{display:grid; grid-template-columns:1fr; gap:12px;}
+@media (min-width:640px){.platform-grid{grid-template-columns:repeat(3,1fr);}}
+.platform-card{
+  border:1px solid var(--line-light); border-radius:16px; padding:22px 20px; background:var(--white);
+  text-align:left; position:relative; overflow:hidden;
+}
+.platform-card .status{
+  position:absolute; top:16px; right:16px; font-family:var(--mono); font-size:9.5px; font-weight:700;
+  padding:3px 8px; border-radius:100px; text-transform:uppercase; letter-spacing:0.04em;
+}
+.status.live{background:var(--emerald-glow); color:var(--emerald-deep);}
+.status.target{background:#FBF0DA; color:#946617;}
+.platform-card .p-icon{font-size:26px; margin-bottom:12px;}
+.platform-card h3{font-family:var(--sans); font-weight:700; font-size:16px; color:var(--ink); margin-bottom:6px;}
+.platform-card p{font-size:13px; color:var(--muted-light); margin-bottom:0;}
+ 
+/* ==================== FOLDER STRUCTURE (collapsible tree) ==================== */
+.tree-shell{
+  background:var(--ink); border-radius:16px; padding:16px; border:1px solid var(--line-dark);
+  font-family:var(--mono); font-size:12.5px;
+}
+.tree-node{}
+.tree-row{
+  display:flex; align-items:center; gap:8px; padding:9px 10px; border-radius:8px; cursor:pointer;
+  color:#D6DCE1; user-select:none;
+}
+.tree-row:active{background:rgba(255,255,255,0.05);}
+.tree-row.folder{color:#8FCBAE; font-weight:600;}
+.tree-row .caret{
+  width:14px; height:14px; flex-shrink:0; transition:transform .2s ease; color:var(--muted-dark);
+}
+.tree-row .caret svg{width:100%; height:100%;}
+.tree-node.open > .tree-row .caret{transform:rotate(90deg);}
+.tree-children{
+  max-height:0; overflow:hidden; transition:max-height .3s ease;
+  padding-left:22px; border-left:1px solid var(--line-dark); margin-left:16px;
+}
+.tree-node.open > .tree-children{max-height:2000px;}
+.tree-row .icon{width:15px; text-align:center; flex-shrink:0; font-size:12px;}
+.tree-row .fname{color:#B9C2CA;}
+.tree-row .comment{color:#5C6470; font-size:11px; margin-left:auto; padding-left:10px; white-space:nowrap; display:none;}
+@media (min-width:520px){.tree-row .comment{display:inline;}}
+.tree-hint{
+  font-family:var(--sans); font-size:12px; color:var(--muted-light); margin-bottom:14px;
+  display:flex; align-items:center; gap:7px;
+}
+ 
+/* ==================== STRUCTURE EXPLAINED - accordion cards ==================== */
+.explain-grid{display:flex; flex-direction:column; gap:10px;}
+.explain-card{
+  border:1px solid var(--line-light); border-radius:14px; background:var(--white); overflow:hidden;
+}
+.explain-head{
+  display:flex; align-items:center; gap:12px; padding:16px 18px; cursor:pointer;
+}
+.explain-head .ex-icon{
+  width:34px; height:34px; border-radius:9px; background:var(--paper-2); display:flex;
+  align-items:center; justify-content:center; font-size:15px; flex-shrink:0;
+}
+.explain-head .ex-title{font-weight:700; font-size:14.5px; color:var(--ink); flex:1; min-width:0;}
+.explain-head .ex-plus{
+  width:22px; height:22px; flex-shrink:0; position:relative; color:var(--muted-light);
+}
+.explain-head .ex-plus::before, .explain-head .ex-plus::after{
+  content:""; position:absolute; background:currentColor; border-radius:2px;
+}
+.explain-head .ex-plus::before{left:4px; right:4px; top:50%; height:2px; transform:translateY(-50%);}
+.explain-head .ex-plus::after{top:4px; bottom:4px; left:50%; width:2px; transform:translateX(-50%); transition:transform .25s ease;}
+.explain-card.open .ex-plus::after{transform:translateX(-50%) rotate(90deg); opacity:0;}
+.explain-body{max-height:0; overflow:hidden; transition:max-height .3s ease;}
+.explain-card.open .explain-body{max-height:600px;}
+.explain-body-inner{padding:0 18px 18px 66px;}
+.explain-body-inner p{font-size:13.8px; color:var(--muted-light); margin-bottom:0;}
+ 
+/* ==================== FILE EXPLANATIONS ==================== */
+.file-group-title{
+  font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:0.1em;
+  color:var(--emerald-deep); margin:30px 0 12px; display:flex; align-items:center; gap:10px;
+}
+.file-group-title:first-child{margin-top:0;}
+.file-group-title::after{content:""; flex:1; height:1px; background:var(--line-light);}
+.file-item{
+  border:1px solid var(--line-light); border-radius:14px; background:var(--white); margin-bottom:9px; overflow:hidden;
+}
+.file-item-head{display:flex; align-items:center; gap:11px; padding:14px 16px; cursor:pointer;}
+.file-item-head .fi-badge{
+  font-family:var(--mono); font-size:9px; font-weight:700; color:var(--white); background:var(--ink-2);
+  padding:3px 7px; border-radius:5px; flex-shrink:0;
+}
+.file-item-head code{font-family:var(--mono); font-size:12.8px; color:var(--ink); font-weight:600;}
+.file-item-head .fi-chevron{margin-left:auto; color:var(--muted-light); flex-shrink:0; transition:transform .25s ease; font-size:11px;}
+.file-item.open .fi-chevron{transform:rotate(180deg);}
+.file-item-body{max-height:0; overflow:hidden; transition:max-height .3s ease;}
+.file-item.open .file-item-body{max-height:400px;}
+.file-item-body-inner{padding:2px 16px 16px 16px;}
+.file-item-body-inner .what{font-size:13.5px; color:var(--cream-text); margin-bottom:8px;}
+.file-item-body-inner .why{
+  font-size:12.5px; color:var(--muted-light); background:var(--paper-2); padding:9px 12px; border-radius:9px;
+}
+.file-item-body-inner .why b{color:var(--emerald-deep); font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:3px;}
+ 
+/* ==================== SECURITY ==================== */
+.threat-strip{display:flex; flex-direction:column; gap:9px;}
+.threat-row{
+  display:grid; grid-template-columns:1fr auto; gap:10px 14px; align-items:center;
+  border:1px solid var(--line-dark); border-radius:12px; padding:14px 16px; background:var(--ink-2);
+}
+.threat-row .tname{font-weight:700; font-size:13.8px; color:#fff;}
+.threat-row .tmit{font-size:12.3px; color:var(--muted-dark); grid-column:1/2;}
+.risk-chip{font-family:var(--mono); font-size:9.5px; font-weight:700; padding:3px 9px; border-radius:100px; height:fit-content;}
+.risk-chip.high{background:rgba(229,83,75,0.18); color:#F0918A;}
+.risk-chip.medium{background:rgba(217,164,65,0.18); color:var(--gold);}
+.code-block{
+  background:#0D1013; border:1px solid var(--line-dark); border-radius:14px; overflow-x:auto;
+  margin:18px 0; padding:18px 16px; font-family:var(--mono); font-size:11.8px; line-height:1.7; color:#C6CCD3;
+}
+.code-block .k{color:#E8A87C;} .code-block .s{color:#9FCB8A;} .code-block .c{color:#5C6470; font-style:italic;}
+ 
+/* ==================== STAT / CLOSER ==================== */
+.stat-row{display:grid; grid-template-columns:repeat(2,1fr); gap:10px;}
+@media (min-width:640px){.stat-row{grid-template-columns:repeat(4,1fr);}}
+.stat-box{
+  background:var(--ink-2); border:1px solid var(--line-dark); border-radius:14px; padding:18px 16px; text-align:left;
+}
+.stat-box .n{font-family:var(--display); font-size:1.7rem; font-weight:600; color:var(--emerald);}
+.stat-box .l{font-family:var(--mono); font-size:10px; color:var(--muted-dark); text-transform:uppercase; margin-top:5px; letter-spacing:0.04em;}
+ 
+.closer{
+  background:
+    radial-gradient(80% 60% at 80% 100%, rgba(34,166,110,0.16), transparent 60%), var(--ink);
+  padding:64px 0 50px; color:#fff; text-align:left;
+}
+.closer h2{font-family:var(--display); font-size:clamp(1.8rem,7vw,2.8rem); font-weight:600; line-height:1.08; margin-bottom:16px;}
+.closer h2 em{color:var(--emerald); font-style:italic;}
+.closer p{color:#B9C2CA; font-size:15px; max-width:520px;}
+.closer-meta{margin-top:38px; padding-top:26px; border-top:1px solid var(--line-dark); font-family:var(--mono); font-size:11.5px; color:var(--muted-dark); line-height:2;}
+ 
+::selection{background:var(--emerald); color:#fff;}
+::-webkit-scrollbar{width:9px;}
+::-webkit-scrollbar-thumb{background:#D9D3C4; border-radius:5px;}
+ 
+/* back to top */
+#totop{
+  position:fixed; bottom:20px; right:18px; width:46px; height:46px; border-radius:50%;
+  background:var(--ink); color:var(--emerald); display:flex; align-items:center; justify-content:center;
+  box-shadow:0 6px 20px rgba(0,0,0,0.25); z-index:400; opacity:0; pointer-events:none;
+  transition:opacity .25s ease, transform .25s ease; border:1px solid var(--line-dark); font-size:16px;
+}
+#totop.show{opacity:1; pointer-events:auto;}
+#totop:active{transform:scale(0.92);}
+</style>
+</head>
+<body>
+ 
+<div id="rail"><div id="rail-fill"></div></div>
+ 
+<!-- ============ HERO ============ -->
+<div class="hero">
+  <div class="wrap hero-inner">
+    <div class="eyebrow"><span class="dot"></span>com.krishnasarathe.mymoney · v2.0.0</div>
+    <h1>MONEY.<br>Your money,<br><span class="accent">fully understood.</span></h1>
+    <p class="hero-lead">A complete, offline-first personal finance app — and this is the complete guide to it. What it does, how to get the most from it, and exactly how it's built underneath, file by file.</p>
+    <div class="hero-badges">
+      <span class="hero-badge">Flutter</span>
+      <span class="hero-badge">SQLite</span>
+      <span class="hero-badge">Firebase</span>
+      <span class="hero-badge">Android · Web · Windows</span>
+    </div>
+    <div class="hero-scroll-cue"><span class="arrow">↓</span> keep scrolling</div>
+  </div>
+</div>
+ 
+<!-- ============ WHAT IS THE APP ============ -->
+<section>
+  <div class="wrap reveal">
+    <div class="section-eyebrow"><span class="num">1</span>The basics</div>
+    <h2 class="section-title">What is MONEY?</h2>
+    <p class="section-dek">The short answer, before anything else.</p>
+    <div class="what-card">
+      <p><strong>MONEY</strong> (shown on your home screen simply as "MONEY", internally called <strong>My-Money</strong>) is a personal finance manager that lives entirely on your device. No account to create, no server that has to be up, no internet required to log a purchase.</p>
+      <p>You open it, you add what you spent or earned, and it quietly keeps score — your balance, your budgets, your savings goals, your recurring bills — all calculated instantly and stored in a real local database, not a spreadsheet pretending to be an app.</p>
+      <p>It's built by one person, Krishna Sarathe, top to bottom: the database, the design, the security, the PDF statements, all of it.</p>
+      <div class="pill-row">
+        <span class="pill">Offline-first</span>
+        <span class="pill">PIN + biometric locked</span>
+        <span class="pill">Free of ads &amp; tracking clutter</span>
+        <span class="pill">Exports real PDF statements</span>
+      </div>
+    </div>
+    <p class="transition-line">Here's everything it actually does →</p>
+  </div>
+</section>
+ 
+<!-- ============ FEATURES ============ -->
+<section style="background:var(--paper-2);">
+  <div class="wrap reveal">
+    <div class="section-eyebrow"><span class="num">2</span>What it does</div>
+    <h2 class="section-title">Every feature, in plain terms</h2>
+    <p class="section-dek">No jargon — just what each part is for.</p>
+ 
+    <div class="feature-grid reveal-stagger">
+      <div class="feature-card">
+        <div class="feature-icon">💸</div>
+        <h3>Log expenses &amp; income</h3>
+        <p>Add what you spend or earn in seconds — amount, category, how you paid (Cash, UPI, Card, Net Banking), a note, and tags for anything you want to find again later.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Budgets that warn you early</h3>
+        <p>Set a weekly or monthly spending limit per category. A progress bar fills up as you spend, and shifts color before you actually go over.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🏁</div>
+        <h3>Savings goals with deadlines</h3>
+        <p>Set a target amount and a date. Every deposit you log moves the progress bar, and a countdown keeps the deadline honest.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔁</div>
+        <h3>Bills that pay themselves</h3>
+        <p>Set up a subscription or recurring bill once — daily, weekly, monthly, or yearly — and it posts itself automatically the moment it's due, no need to remember.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Real analytics</h3>
+        <p>Pie charts break down where your money actually goes by category, with date filters so you can compare this month to last.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📄</div>
+        <h3>Print-ready statements</h3>
+        <p>Export a formal PDF ledger of your transactions any time — useful for accounting, taxes, or just a record you can keep.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>Locked behind your PIN</h3>
+        <p>A 4-digit PIN (never stored in plain text) plus fingerprint or FaceID unlock, so the app opens for you and only you.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💾</div>
+        <h3>Full backup &amp; restore</h3>
+        <p>Export your entire database as a backup file whenever you want, and restore it on a new device without losing a single entry.</p>
+      </div>
+    </div>
+    <p class="transition-line">Knowing what it does is one thing — here's how to actually get the most out of it →</p>
+  </div>
+</section>
+ 
+<!-- ============ HOW TO USE IT WELL ============ -->
+<section>
+  <div class="wrap reveal">
+    <div class="section-eyebrow"><span class="num">3</span>Getting the most from it</div>
+    <h2 class="section-title">How to use MONEY well</h2>
+    <p class="section-dek">The app works the moment you open it — but a few habits make it genuinely useful instead of just another tracker you abandon in a week.</p>
+ 
+    <div class="flow">
+      <div class="flow-step">
+        <div class="fnum">1</div>
+        <h4>Set your PIN first</h4>
+        <p>Before anything else, lock the app down from Settings. It takes ten seconds and means your financial data is protected from the very first entry.</p>
+      </div>
+      <div class="flow-step">
+        <div class="fnum">2</div>
+        <h4>Log the same day, not the same week</h4>
+        <p>Add expenses right after you spend, not from memory later. The categorization and tags only stay useful if the entry is accurate.</p>
+        <span class="flow-tip">Takes under 10 seconds per entry</span>
+      </div>
+      <div class="flow-step">
+        <div class="fnum">3</div>
+        <h4>Set budgets on your top 3 categories first</h4>
+        <p>Don't budget everything on day one. Start with food, transport, and one more that tends to run away from you — expand once those feel automatic.</p>
+      </div>
+      <div class="flow-step">
+        <div class="fnum">4</div>
+        <h4>Put every subscription into Recurring</h4>
+        <p>Every bill you pay on autopilot — rent, streaming, gym — belongs here. This is what makes your balance actually predictive instead of just historical.</p>
+      </div>
+      <div class="flow-step">
+        <div class="fnum">5</div>
+        <h4>Check Analytics weekly, not daily</h4>
+        <p>Daily numbers are noise. A weekly glance at the category breakdown is where the real patterns — and the real surprises — show up.</p>
+      </div>
+      <div class="flow-step">
+        <div class="fnum">6</div>
+        <h4>Export a PDF statement monthly</h4>
+        <p>Even if you don't need it today, a monthly export builds a paper trail you'll be glad to have for taxes, disputes, or just your own records.</p>
+      </div>
+    </div>
+    <p class="transition-line">Now, what's actually running under the hood →</p>
+  </div>
+</section>
+ 
+<!-- ============ TECH STACK (dark) ============ -->
+<section class="dark-sec">
+  <div class="wrap reveal">
+    <div class="section-eyebrow"><span class="num">4</span>Under the hood</div>
+    <h2 class="section-title">The tech stack</h2>
+    <p class="section-dek">Every layer, from the pixels on screen down to the database on disk.</p>
+ 
+    <div class="stack-tower reveal-stagger">
+      <div class="stack-layer">
+        <span class="sl-tag">UI</span>
+        <div class="sl-body"><div class="name">Flutter</div><div class="desc">Single codebase renders identically on Android, Web, and Windows</div></div>
+      </div>
+      <div class="stack-layer">
+        <span class="sl-tag">STATE</span>
+        <div class="sl-body"><div class="name">Provider</div><div class="desc">Reactive state bus — one source of truth the whole UI listens to</div></div>
+      </div>
+      <div class="stack-layer">
+        <span class="sl-tag">DATA</span>
+        <div class="sl-body"><div class="name">SQLite via sqflite</div><div class="desc">Real relational database on-device — 8 tables, &lt;10ms queries</div></div>
+      </div>
+      <div class="stack-layer">
+        <span class="sl-tag">AUTH</span>
+        <div class="sl-body"><div class="name">local_auth + crypto</div><div class="desc">Salted SHA-256 PIN hashing plus hardware fingerprint/FaceID</div></div>
+      </div>
+      <div class="stack-layer">
+        <span class="sl-tag">CLOUD</span>
+        <div class="sl-body"><div class="name">Firebase / Firestore</div><div class="desc">Remote telemetry &amp; device lockdown, isolated per user</div></div>
+      </div>
+      <div class="stack-layer">
+        <span class="sl-tag">CHARTS</span>
+        <div class="sl-body"><div class="name">fl_chart</div><div class="desc">Category pie charts and spending visualizations</div></div>
+      </div>
+      <div class="stack-layer">
+        <span class="sl-tag">EXPORT</span>
+        <div class="sl-body"><div class="name">pdf + printing</div><div class="desc">Vector-rendered, print-ready financial statements</div></div>
+      </div>
+    </div>
+    <p class="transition-line" style="border-top-color:var(--line-dark); color:var(--emerald);">And here's where all of that actually runs →</p>
+  </div>
+</section>
+ 
+<!-- ============ PLATFORMS ============ -->
+<section>
+  <div class="wrap reveal">
+    <div class="section-eyebrow"><span class="num">5</span>Where it runs</div>
+    <h2 class="section-title">Platforms</h2>
+    <p class="section-dek">One codebase, three destinations.</p>
+ 
+    <div class="platform-grid reveal-stagger">
+      <div class="platform-card">
+        <span class="status live">Live</span>
+        <div class="p-icon">📱</div>
+        <h3>Android</h3>
+        <p>Fully tested across Android 12 through 15 (API 31–35). This is the primary, most-used surface.</p>
+      </div>
+      <div class="platform-card">
+        <span class="status live">Live</span>
+        <div class="p-icon">🌐</div>
+        <h3>Web</h3>
+        <p>Runs locally in Chrome or Edge via a one-click launcher — no install needed, no Flutter SDK required.</p>
+      </div>
+      <div class="platform-card">
+        <span class="status target">In progress</span>
+        <div class="p-icon">🖥️</div>
+        <h3>Windows</h3>
+        <p>Native desktop build via Flutter's C++ runner — targeted, with the groundwork already in place.</p>
+      </div>
+    </div>
+    <p class="transition-line">Now let's actually open up the project — starting with how it's organized →</p>
+  </div>
+</section>
+ 
+<!-- ============ FOLDER STRUCTURE (dark, tree) ============ -->
+<section class="dark-sec">
+  <div class="wrap reveal">
+    <div class="section-eyebrow"><span class="num">6</span>Inside the project</div>
+    <h2 class="section-title">Folder structure</h2>
+    <p class="section-dek">The exact layout of the codebase. Tap any folder to expand it.</p>
+ 
+    <div class="tree-hint">👆 Tap folders to explore — this is the real structure</div>
+ 
+    <div class="tree-shell" id="tree">
+      <div class="tree-node open">
+        <div class="tree-row folder" onclick="toggleNode(this)">
+          <span class="caret">▶</span><span class="icon">📁</span><span class="fname">My-Paisa/</span>
+        </div>
+        <div class="tree-children">
+ 
+          <div class="tree-node open">
+            <div class="tree-row folder" onclick="toggleNode(this)">
+              <span class="caret">▶</span><span class="icon">📁</span><span class="fname">My-Money/</span><span class="comment">core app source</span>
+            </div>
+            <div class="tree-children">
+              <div class="tree-node open">
+                <div class="tree-row folder" onclick="toggleNode(this)">
+                  <span class="caret">▶</span><span class="icon">📁</span><span class="fname">lib/</span><span class="comment">all Dart source code</span>
+                </div>
+                <div class="tree-children">
+                  <div class="tree-row"><span class="icon">📁</span><span class="fname">database/</span><span class="comment">db_helper.dart</span></div>
+                  <div class="tree-row"><span class="icon">📁</span><span class="fname">models/</span><span class="comment">Expense, Income, etc.</span></div>
+                  <div class="tree-row"><span class="icon">📁</span><span class="fname">providers/</span><span class="comment">app_provider.dart</span></div>
+                  <div class="tree-row"><span class="icon">📁</span><span class="fname">repositories/</span><span class="comment">financial_repository.dart</span></div>
+                  <div class="tree-row"><span class="icon">📁</span><span class="fname">screens/</span><span class="comment">every UI screen</span></div>
+                  <div class="tree-row"><span class="icon">📁</span><span class="fname">services/</span><span class="comment">firebase, notifications</span></div>
+                  <div class="tree-row"><span class="icon">📁</span><span class="fname">utils/</span><span class="comment">theme, constants, PDF</span></div>
+                  <div class="tree-row"><span class="icon">📁</span><span class="fname">widgets/</span><span class="comment">shared components</span></div>
+                  <div class="tree-row"><span class="icon">📄</span><span class="fname">main.dart</span><span class="comment">entrypoint</span></div>
+                </div>
+              </div>
+              <div class="tree-row"><span class="icon">📁</span><span class="fname">android/</span><span class="comment">Kotlin + Gradle</span></div>
+              <div class="tree-row"><span class="icon">📁</span><span class="fname">ios/</span><span class="comment">iOS config</span></div>
+              <div class="tree-row"><span class="icon">📁</span><span class="fname">web/</span><span class="comment">PWA + HTML host</span></div>
+              <div class="tree-row"><span class="icon">📁</span><span class="fname">windows/</span><span class="comment">C++ runner</span></div>
+              <div class="tree-row"><span class="icon">📄</span><span class="fname">pubspec.yaml</span><span class="comment">dependencies</span></div>
+            </div>
+          </div>
+ 
+          <div class="tree-node">
+            <div class="tree-row folder" onclick="toggleNode(this)">
+              <span class="caret">▶</span><span class="icon">📁</span><span class="fname">releases/</span><span class="comment">production binaries</span>
+            </div>
+            <div class="tree-children">
+              <div class="tree-row"><span class="icon">📦</span><span class="fname">MONEY-v1.0-release.apk</span></div>
+              <div class="tree-row"><span class="icon">📦</span><span class="fname">MONEY-v1.0-release.aab</span></div>
+            </div>
+          </div>
+ 
+          <div class="tree-row"><span class="icon">⚙️</span><span class="fname">Launch-MONEY-Laptop.bat</span><span class="comment">1-click web launcher</span></div>
+          <div class="tree-row"><span class="icon">📄</span><span class="fname">README.md</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="transition-line" style="border-top-color:var(--line-dark); color:var(--emerald);">That's the map. Now here's what each part of it actually means →</p>
+  </div>
+</section>
+ 
+<!-- ============ STRUCTURE EXPLAINED ============ -->
+<section>
+  <div class="wrap reveal">
+    <div class="section-eyebrow"><span class="num">7</span>Making sense of it</div>
+    <h2 class="section-title">What the structure means</h2>
+    <p class="section-dek">Folders aren't arbitrary — each one has exactly one job. Tap to expand.</p>
+ 
+    <div class="explain-grid" id="explain-list">
+      <div class="explain-card">
+        <div class="explain-head" onclick="toggleExplain(this)">
+          <div class="ex-icon">🗄️</div><div class="ex-title">database/</div><div class="ex-plus"></div>
+        </div>
+        <div class="explain-body"><div class="explain-body-inner"><p>The persistence layer. One file, <code>db_helper.dart</code>, owns every SQL table and every migration. If your data needs to survive an app restart, it passes through here.</p></div></div>
+      </div>
+      <div class="explain-card">
+        <div class="explain-head" onclick="toggleExplain(this)">
+          <div class="ex-icon">🧩</div><div class="ex-title">models/</div><div class="ex-plus"></div>
+        </div>
+        <div class="explain-body"><div class="explain-body-inner"><p>The shapes of your data — what an Expense <em>is</em>, what an Income <em>is</em>. No logic lives here, just definitions everything else agrees on.</p></div></div>
+      </div>
+      <div class="explain-card">
+        <div class="explain-head" onclick="toggleExplain(this)">
+          <div class="ex-icon">🔌</div><div class="ex-title">repositories/</div><div class="ex-plus"></div>
+        </div>
+        <div class="explain-body"><div class="explain-body-inner"><p>The middleman between raw SQL and the app's state. Nothing above this layer writes a database query directly — it all goes through here first.</p></div></div>
+      </div>
+      <div class="explain-card">
+        <div class="explain-head" onclick="toggleExplain(this)">
+          <div class="ex-icon">⚡</div><div class="ex-title">providers/</div><div class="ex-plus"></div>
+        </div>
+        <div class="explain-body"><div class="explain-body-inner"><p>The reactive brain. When you add an expense, this is what notices, recalculates your balance, and tells every screen watching it to redraw.</p></div></div>
+      </div>
+      <div class="explain-card">
+        <div class="explain-head" onclick="toggleExplain(this)">
+          <div class="ex-icon">🖼️</div><div class="ex-title">screens/</div><div class="ex-plus"></div>
+        </div>
+        <div class="explain-body"><div class="explain-body-inner"><p>Everything you actually see and tap — dashboard, transactions, analytics, goals, recurring, settings. One subfolder per screen.</p></div></div>
+      </div>
+      <div class="explain-card">
+        <div class="explain-head" onclick="toggleExplain(this)">
+          <div class="ex-icon">🛰️</div><div class="ex-title">services/</div><div class="ex-plus"></div>
+        </div>
+        <div class="explain-body"><div class="explain-body-inner"><p>Everything that talks to the outside world or the OS — Firebase, local notifications, device session identity.</p></div></div>
+      </div>
+      <div class="explain-card">
+        <div class="explain-head" onclick="toggleExplain(this)">
+          <div class="ex-icon">🎨</div><div class="ex-title">utils/</div><div class="ex-plus"></div>
+        </div>
+        <div class="explain-body"><div class="explain-body-inner"><p>Shared reference material — theme colors, global constants, and the PDF export engine. Anything referenced from everywhere lives here.</p></div></div>
+      </div>
+      <div class="explain-card">
+        <div class="explain-head" onclick="toggleExplain(this)">
+          <div class="ex-icon">🧱</div><div class="ex-title">widgets/</div><div class="ex-plus"></div>
+        </div>
+        <div class="explain-body"><div class="explain-body-inner"><p>Reusable visual pieces — buttons, cards, chips — built once and used across every screen so the app looks consistent everywhere.</p></div></div>
+      </div>
+    </div>
+    <p class="transition-line">That's the folders. Now, file by file — what's actually inside each one →</p>
+  </div>
+</section>
+ 
+<!-- ============ FILE-BY-FILE EXPLANATIONS ============ -->
+<section style="background:var(--paper-2);">
+  <div class="wrap reveal">
+    <div class="section-eyebrow"><span class="num">8</span>The details</div>
+    <h2 class="section-title">Every important file, explained</h2>
+    <p class="section-dek">What it is, and why it exists. Tap any file to open it.</p>
+ 
+    <div class="file-group-title">Entry &amp; Config</div>
+    <div class="explain-grid">
+      <div class="file-item">
+        <div class="file-item-head" onclick="toggleFile(this)"><span class="fi-badge">DART</span><code>lib/main.dart</code><span class="fi-chevron">▾</span></div>
+        <div class="file-item-body"><div class="file-item-body-inner">
+          <p class="what">The very first code that runs. Boots Flutter, connects Firebase, wires up every Provider, and hands off to the Splash Screen.</p>
+          <div class="why"><b>Why it matters</b>If this file breaks, the app doesn't open. Everything else depends on it running first.</div>
+        </div></div>
+      </div>
+      <div class="file-item">
+        <div class="file-item-head" onclick="toggleFile(this)"><span class="fi-badge">DART</span><code>lib/utils/constants.dart</code><span class="fi-chevron">▾</span></div>
+        <div class="file-item-body"><div class="file-item-body-inner">
+          <p class="what">Every fixed value the app relies on — default categories, icon mappings, preference keys — kept in one place instead of scattered everywhere.</p>
+          <div class="why"><b>Why it matters</b>Change a default category here once, instead of hunting through a dozen screens.</div>
+        </div></div>
+      </div>
+    </div>
+ 
+    <div class="file-group-title">Data &amp; Storage</div>
+    <div class="explain-grid">
+      <div class="file-item">
+        <div class="file-item-head" onclick="toggleFile(this)"><span class="fi-badge">DART</span><code>lib/database/db_helper.dart</code><span class="fi-chevron">▾</span></div>
+        <div class="file-item-body"><div class="file-item-body-inner">
+          <p class="what">The database itself. Creates all 8 tables, handles every schema upgrade from version 1 to 4, and keeps each user's data separate.</p>
+          <div class="why"><b>Why it matters</b>This is the single most critical file in the app — every number you see traces back to a query run here.</div>
+        </div></div>
+      </div>
+      <div class="file-item">
+        <div class="file-item-head" onclick="toggleFile(this)"><span class="fi-badge">DART</span><code>lib/models/expense.dart</code><span class="fi-chevron">▾</span></div>
+        <div class="file-item-body"><div class="file-item-body-inner">
+          <p class="what">Defines exactly what an expense record looks like — amount, category, payment method, date, and how it converts to and from database rows.</p>
+          <div class="why"><b>Why it matters</b>Every screen that shows an expense trusts this definition to be consistent.</div>
+        </div></div>
+      </div>
+      <div class="file-item">
+        <div class="file-item-head" onclick="toggleFile(this)"><span class="fi-badge">DART</span><code>lib/models/income.dart</code><span class="fi-chevron">▾</span></div>
+        <div class="file-item-body"><div class="file-item-body-inner">
+          <p class="what">The income counterpart to Expense — same idea, but tracks a <em>source</em> instead of a name, since money is coming in, not going out.</p>
+          <div class="why"><b>Why it matters</b>Keeping income and expense as separate shapes avoids mixing up the direction money is moving.</div>
+        </div></div>
+      </div>
+      <div class="file-item">
+        <div class="file-item-head" onclick="toggleFile(this)"><span class="fi-badge">DART</span><code>lib/models/models.dart</code><span class="fi-chevron">▾</span></div>
+        <div class="file-item-body"><div class="file-item-body-inner">
+          <p class="what">Everything else: Category, Savings Goal, Recurring Expense, Account, and Spending Limit — the supporting cast around your transactions.</p>
+        </div></div>
+      </div>
+      <div class="file-item">
+        <div class="file-item-head" onclick="toggleFile(this)"><span class="fi-badge">DART</span><code>lib/repositories/financial_repository.dart</code><span class="fi-chevron">▾</span></div>
+        <div class="file-item-body"><div class="file-item-body-inner">
+          <p class="what">Sits between the database and the app's state, quietly attaching the current user's identity to every query.</p>
+          <div class="why"><b>Why it matters</b>Means the database engine can change entirely someday without touching a single screen.</div>
+        </div></div>
+      </div>
+    </div>
+ 
+    <div class="file-group-title">State &amp; Logic</div>
+    <div class="explain-grid">
+      <div class="file-item">
+        <div class="file-item-head" onclick="toggleFile(this)"><span class="fi-badge">DART</span><code>lib/providers/app_provider.dart</code><span class="fi-chevron">▾</span></div>
+        <div class="file-item-body"><div class="file-item-body-inner">
+          <p class="what">The reactive core. Holds every expense, income, category, and goal in memory, recalculates your balance and spending speed, and tells the UI when to refresh.</p>
+          <div class="why"><b>Why it matters</b>This is what makes the app feel instant — tap "Save" and the dashboard updates immediately, with no reload.</div>
+        </div></div>
+      </div>
+    </div>
+ 
+    <div class="file-group-title">Screens You Use</div>
+    <div class="explain-grid">
+      <div class="file-item">
+        <div class="file-item-head" onclick="toggleFile(this)"><span class="fi-badge">UI</span><code>splash_screen.dart</code><span class="fi-chevron">▾</span></div>
+        <div class="file-item-body"><div class="file-item-body-inner"><p class="what">The first screen you see. Checks whether a PIN is set, then routes you either to the lock screen or straight to the dashboard.</p></div></div>
+      </div>
+      <div class="file-item">
+        <div class="file-item-head" onclick="toggleFile(this)"><span class="fi-badge">UI</span><code>pin_lock_screen.dart</code><span class="fi-chevron">▾</span></div>
+        <div class="file-item-body"><div class="file-item-body-inner"><p class="what">The numeric keypad that guards everything. Verifies your PIN against a salted hash and offers fingerprint/FaceID as a shortcut.</p></div></div>
+      </div>
+      <div class="file-item">
+        <div class="file-item-head" onclick="toggleFile(this)"><span class="fi-badge">UI</span><code>dashboard_screen.dart</code><span class="fi-chevron">▾</span></div>
+        <div class="file-item-body"><div class="file-item-body-inner"><p class="what">Home base. Net balance, budget progress bars, quick-add actions, and your most recent transactions in one glance.</p></div></div>
+      </div>
+      <div class="file-item">
+        <div class="file-item-head" onclick="toggleFile(this)"><span class="fi-badge">UI</span><code>add_transaction_sheet.dart</code><span class="fi-chevron">▾</span></div>
+        <div class="file-item-body"><div class="file-item-body-inner"><p class="what">The form that slides up from the bottom every time you log something — switches its categories automatically depending on whether you're adding an expense or income.</p></div></div>
+      </div>
+      <div class="file-item">
+        <div class="file-item-head" onclick="toggleFile(this)"><span class="fi-badge">UI</span><code>analytics_screen.dart</code><span class="fi-chevron">▾</span></div>
+        <div class="file-item-body"><div class="file-item-body-inner"><p class="what">Pie charts and spending-speed gauges that turn raw transactions into patterns you can actually act on.</p></div></div>
+      </div>
+      <div class="file-item">
+        <div class="file-item-head" onclick="toggleFile(this)"><span class="fi-badge">UI</span><code>categories_screen.dart</code><span class="fi-chevron">▾</span></div>
+        <div class="file-item-body"><div class="file-item-body-inner"><p class="what">Where you build and customize your own categories on top of the defaults, each with its own color and icon.</p></div></div>
+      </div>
+      <div class="file-item">
+        <div class="file-item-head" onclick="toggleFile(this)"><span class="fi-badge">UI</span><code>goals_screen.dart</code><span class="fi-chevron">▾</span></div>
+        <div class="file-item-body"><div class="file-item-body-inner"><p class="what">Every savings goal with its progress bar, deadline badge, and a quick way to log a new deposit toward it.</p></div></div>
+      </div>
+      <div class="file-item">
+        <div class="file-item-head" onclick="toggleFile(this)"><span class="fi-badge">UI</span><code>recurring_screen.dart</code><span class="fi-chevron">▾</span></div>
+        <div class="file-item-body"><div class="file-item-body-inner"><p class="what">Manage every subscription and recurring bill — pause one, resume it, or run it early if you need to.</p></div></div>
+      </div>
+      <div class="file-item">
+        <div class="file-item-head" onclick="toggleFile(this)"><span class="fi-badge">UI</span><code>settings_screen.dart</code><span class="fi-chevron">▾</span></div>
+        <div class="file-item-body"><div class="file-item-body-inner"><p class="what">Control panel for your PIN, biometrics, theme, currency symbol, PDF export, and full backup/restore.</p></div></div>
+      </div>
+    </div>
+ 
+    <div class="file-group-title">Background Services</div>
+    <div class="explain-grid">
+      <div class="file-item">
+        <div class="file-item-head" onclick="toggleFile(this)"><span class="fi-badge">SVC</span><code>firebase_service.dart</code><span class="fi-chevron">▾</span></div>
+        <div class="file-item-body"><div class="file-item-body-inner"><p class="what">Watches Firestore in real time for a remote lock signal — the emergency switch if a device is ever lost or stolen.</p></div></div>
+      </div>
+      <div class="file-item">
+        <div class="file-item-head" onclick="toggleFile(this)"><span class="fi-badge">SVC</span><code>notification_service.dart</code><span class="fi-chevron">▾</span></div>
+        <div class="file-item-body"><div class="file-item-body-inner"><p class="what">Sends local device notifications for upcoming bills and when you're closing in on a budget limit.</p></div></div>
+      </div>
+      <div class="file-item">
+        <div class="file-item-head" onclick="toggleFile(this)"><span class="fi-badge">SVC</span><code>session_manager.dart</code><span class="fi-chevron">▾</span></div>
+        <div class="file-item-body"><div class="file-item-body-inner"><p class="what">Generates a unique signature for your device, so your data stays correctly separated if the app is ever shared.</p></div></div>
+      </div>
+      <div class="file-item">
+        <div class="file-item-head" onclick="toggleFile(this)"><span class="fi-badge">UTIL</span><code>pdf_export.dart</code><span class="fi-chevron">▾</span></div>
+        <div class="file-item-body"><div class="file-item-body-inner"><p class="what">Turns your transaction history into a formal, print-ready PDF statement — built as real vector graphics, not a screenshot.</p></div></div>
+      </div>
+      <div class="file-item">
+        <div class="file-item-head" onclick="toggleFile(this)"><span class="fi-badge">UTIL</span><code>theme.dart</code><span class="fi-chevron">▾</span></div>
+        <div class="file-item-body"><div class="file-item-body-inner"><p class="what">The single source for every color, font, and spacing rule — emerald green, crimson red, dark obsidian cards — so the whole app looks like one coherent product.</p></div></div>
+      </div>
+    </div>
+    <p class="transition-line">There's more happening behind the scenes — starting with how your data is actually protected →</p>
+  </div>
+</section>
+ 
+<!-- ============ TRUST & SAFETY (dark) ============ -->
+<section class="dark-sec">
+  <div class="wrap reveal">
+    <div class="section-eyebrow"><span class="num">9</span>Trust &amp; safety</div>
+    <h2 class="section-title">How your data is protected</h2>
+    <p class="section-dek">Financial data deserves real security, not a token password field. Here's exactly what's in place.</p>
+ 
+    <p>Your PIN is never stored as-is. It's run through <strong>SHA-256</strong> together with a random value unique to your device — called a salt — so even if someone got access to the stored value, they couldn't reverse it back into your PIN, and the same PIN looks completely different on two different devices.</p>
+
+    <div class="code-block">
+      stored_value = <span class="k">SHA256</span>(pin + <span class="s">device_salt</span>)
+    </div>
+
+    <p>On top of that sits <strong>biometric unlock</strong> — fingerprint or FaceID, handled by your phone's own secure hardware rather than the app itself.</p>
+
+    <p style="margin-top:24px; margin-bottom:14px; font-weight:700; color:#fff;">The main risks were mapped out and mitigated deliberately:</p>
+
+    <div class="threat-strip reveal-stagger">
+      <div class="threat-row">
+        <div class="tname">Someone brute-forcing your PIN</div>
+        <span class="risk-chip high">Higher risk</span>
+        <div class="tmit">Each wrong attempt adds a longer delay, with biometric lockout as a backstop.</div>
+      </div>
+      <div class="threat-row">
+        <div class="tname">Unauthorized cloud access</div>
+        <span class="risk-chip high">Higher risk</span>
+        <div class="tmit">Firestore rules only ever allow a user to read or write their own data — never anyone else's.</div>
+      </div>
+      <div class="threat-row">
+        <div class="tname">Someone stealing your device</div>
+        <span class="risk-chip medium">Moderate</span>
+        <div class="tmit">Data sits behind the OS sandbox and your salted PIN, out of easy reach even with the phone in hand.</div>
+      </div>
+      <div class="threat-row">
+        <div class="tname">Data intercepted in transit</div>
+        <span class="risk-chip medium">Moderate</span>
+        <div class="tmit">Every bit of cloud sync travels over encrypted HTTPS (TLS 1.3) — nothing leaves in the clear.</div>
+      </div>
+    </div>
+    <p class="transition-line" style="border-top-color:var(--line-dark); color:var(--emerald);">Last thing — the numbers behind the build, and where to find it →</p>
+  </div>
+</section>
+
+<!-- ============ CLOSER (dark) ============ -->
+<div class="closer">
+  <div class="wrap reveal">
+    <div class="stat-row reveal-stagger" style="margin-bottom:44px;">
+      <div class="stat-box"><div class="n">8</div><div class="l">Database Tables</div></div>
+      <div class="stat-box"><div class="n">&lt;10ms</div><div class="l">Query Speed</div></div>
+      <div class="stat-box"><div class="n">3</div><div class="l">Platforms</div></div>
+      <div class="stat-box"><div class="n">29.1MB</div><div class="l">Android Install Size</div></div>
+    </div>
+
+    <h2>That's the<br><em>whole app.</em></h2>
+    <p>Every feature, every screen, every file, and everything protecting it — from the PIN screen you see first, down to the SQL tables you never will. Built and maintained end to end by one engineer.</p>
+
+    <div class="closer-meta">
+      MONEY / MY-MONEY<br>
+      BUILT BY KRISHNA SARATHE<br>
+      thekrishnasarathe000@gmail.com<br>
+      © 2026 · ALL RIGHTS RESERVED
+    </div>
+  </div>
+</div>
+
+<button id="totop" aria-label="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+// Scroll progress rail
+window.addEventListener('scroll', function(){
+  var winScroll = document.documentElement.scrollTop || document.body.scrollTop;
+  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var scrolled = (winScroll / height) * 100;
+  document.getElementById('rail-fill').style.width = scrolled + '%';
+  
+  var totop = document.getElementById('totop');
+  if(winScroll > 400){ totop.classList.add('show'); } else { totop.classList.remove('show'); }
+});
+
+// Scroll reveal Observer
+var observer = new IntersectionObserver(function(entries){
+  entries.forEach(function(entry){
+    if(entry.isIntersecting){
+      entry.target.classList.add('in');
+    }
+  });
+},{threshold:0.12});
+
+document.querySelectorAll('.reveal, .reveal-stagger').forEach(function(el){
+  observer.observe(el);
+});
+
+// Folders interactive tree toggle
+function toggleNode(el){
+  var parent = el.parentElement;
+  parent.classList.toggle('open');
+}
+
+// Explanation accordions toggle
+function toggleExplain(el){
+  var card = el.parentElement;
+  card.classList.toggle('open');
+}
+
+// File item toggle
+function toggleFile(el){
+  var item = el.parentElement;
+  item.classList.toggle('open');
+}
+</script>
+</body>
+</html>

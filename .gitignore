@@ -1,0 +1,36 @@
+# Environment and Secret files
+.env
+*.env
+.env.local
+.env.*.local
+*.key
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.iml
+
+# Flutter & Dart Build Artifacts
+**/build/
+**/.dart_tool/
+**/.pub-cache/
+**/.pub/
+**/.flutter-plugins*
+**/coverage/
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/

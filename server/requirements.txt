@@ -1,0 +1,5 @@
+﻿# MONEY AI Financial Coach Dependencies
+# (All optional since server uses stdlib + works with preinstalled SDKs)
+google-generativeai>=0.8.0
+groq>=1.0.0
+python-dotenv>=1.0.0

@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /money_devices/{deviceId} {
+      allow create: if request.auth != null
+        && request.resource.data.ownerUid == request.auth.uid;
+      allow read: if request.auth != null
+        && (!('ownerUid' in resource.data) || resource.data.get('ownerUid', '') == '' || resource.data.ownerUid == request.auth.uid);
+      allow write: if request.auth != null
+        && resource.data.get('ownerUid', null) == request.auth.uid;
+      // Transition: allow backfill write on docs missing or empty ownerUid
+      allow update: if request.auth != null
+        && (!('ownerUid' in resource.data) || resource.data.get('ownerUid', '') == '')
+        && request.resource.data.ownerUid == request.auth.uid;
+    }
+
+    match /money_app/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if false; // app-side should never write global settings
+    }
+  }
+}
