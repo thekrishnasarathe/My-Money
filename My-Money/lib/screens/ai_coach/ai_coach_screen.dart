@@ -5,6 +5,7 @@ import '../../providers/app_provider.dart';
 import '../../services/ai_coach_service.dart';
 import '../../services/financial_context_builder.dart';
 import '../../utils/theme.dart';
+import '../ai_budget/ai_budget_planner_screen.dart';
 
 class AiCoachScreen extends StatefulWidget {
   final String? initialQuery;
@@ -235,6 +236,14 @@ class _AiCoachScreenState extends State<AiCoachScreen> with SingleTickerProvider
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.calculate_outlined, color: AppTheme.primary, size: 22),
+            tooltip: 'AI Monthly Budget Planner',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AiBudgetPlannerScreen()),
+            ),
+          ),
           _buildStatusBadge(),
           IconButton(
             icon: const Icon(Icons.info_outline, size: 20),

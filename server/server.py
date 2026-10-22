@@ -115,6 +115,10 @@ class AIServerHandler(BaseHTTPRequestHandler):
                 result = llm_provider.get_insights(context)
                 self._send_json_response(200, result)
 
+            elif path == "/api/ai/budget-planner":
+                result = llm_provider.plan_budget(body)
+                self._send_json_response(200, result)
+
             else:
                 self._send_json_response(404, {"error": f"Endpoint '{path}' not found"})
         except Exception as e:

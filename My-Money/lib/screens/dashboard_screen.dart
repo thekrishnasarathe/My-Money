@@ -8,6 +8,7 @@ import '../models/expense.dart';
 import '../models/income.dart';
 import 'transactions/add_transaction_sheet.dart';
 import 'ai_coach/ai_coach_screen.dart';
+import 'ai_budget/ai_budget_planner_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -418,6 +419,22 @@ class _AiCoachBanner extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const AiBudgetPlannerScreen())),
+              icon: const Icon(Icons.calculate_outlined, size: 14, color: Colors.white),
+              label: const Text('AI Monthly Budget Planner',
+                style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: Colors.white.withOpacity(0.25)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+              ),
+            ),
           ),
         ],
       ),

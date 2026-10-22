@@ -5,6 +5,7 @@ import '../models/expense.dart';
 import '../models/income.dart';
 import '../models/debt.dart';
 import '../models/models.dart';
+import '../models/ai_budget_plan.dart';
 import '../utils/constants.dart';
 
 class AppProvider extends ChangeNotifier {
@@ -30,6 +31,8 @@ class AppProvider extends ChangeNotifier {
   List<RecurringExpense> _recurring = [];
   List<SavingsGoal> _goals = [];
   List<AppCategory> _categories = [];
+  AiBudgetPlan? _activeBudgetPlan;
+  List<AiBudgetPlan> _savedBudgetPlans = [];
 
   int _selectedMonth = DateTime.now().month;
   int _selectedYear = DateTime.now().year;
@@ -70,6 +73,8 @@ class AppProvider extends ChangeNotifier {
   List<RecurringExpense> get recurring => _recurring;
   List<SavingsGoal> get goals => _goals;
   List<AppCategory> get categories => _categories;
+  AiBudgetPlan? get activeBudgetPlan => _activeBudgetPlan;
+  List<AiBudgetPlan> get savedBudgetPlans => _savedBudgetPlans;
 
   int get selectedMonth => _selectedMonth;
   int get selectedYear => _selectedYear;
@@ -288,6 +293,8 @@ class AppProvider extends ChangeNotifier {
     _recurring = await _repo.getRecurring();
     _goals = await _repo.getGoals();
     _categories = await _repo.getCategories();
+    _activeBudgetPlan = await _repo.getLatestAiBudgetPlan();
+    _savedBudgetPlans = await _repo.getAiBudgetPlans();
     _invalidateCaches();
     notifyListeners();
   }
@@ -528,6 +535,39 @@ class AppProvider extends ChangeNotifier {
         _categories.add(cat.copyWith(id: id));
       }
     }
+    notifyListeners();
+  }
+
+  // ── AI BUDGET PLANNER CRUD ──
+  void setActiveBudgetPlan(AiBudgetPlan? plan) {
+    _activeBudgetPlan = plan;
+    notifyListeners();
+  }
+
+  Future<void> saveAiBudgetPlan(AiBudgetPlan plan) async {
+    final id = await _repo.saveAiBudgetPlan(plan);
+    final saved = plan.copyWith(id: id);
+    _activeBudgetPlan = saved;
+    _savedBudgetPlans = await _repo.getAiBudgetPlans();
+    notifyListeners();
+  }
+
+  Future<void> deleteAiBudgetPlan(int id) async {
+    await _repo.deleteAiBudgetPlan(id);
+    _savedBudgetPlans.removeWhere((p) => p.id == id);
+    if (_activeBudgetPlan?.id == id) {
+      _activeBudgetPlan = _savedBudgetPlans.isNotEmpty ? _savedBudgetPlans.first : null;
+    }
+    notifyListeners();
+  }
+
+  Future<void> applyAiBudgetPlanToBudgets(AiBudgetPlan plan, {int? month, int? year}) async {
+    final m = month ?? _selectedMonth;
+    final y = year ?? _selectedYear;
+    await _repo.applyPlanToMonthlyBudgets(plan, m, y);
+    await saveAiBudgetPlan(plan);
+    _budgets = await _repo.getBudgetsByMonth(_selectedMonth, _selectedYear);
+    _invalidateCaches();
     notifyListeners();
   }
 

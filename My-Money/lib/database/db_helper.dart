@@ -5,6 +5,7 @@ import '../models/expense.dart';
 import '../models/income.dart';
 import '../models/debt.dart';
 import '../models/models.dart';
+import '../models/ai_budget_plan.dart';
 
 class DbHelper {
   static final DbHelper _instance = DbHelper._internal();
@@ -12,7 +13,7 @@ class DbHelper {
   DbHelper._internal();
 
   static Database? _db;
-  static const int _dbVersion = 4;
+  static const int _dbVersion = 5;
   static const String _dbName = 'money.db';
   static const String _oldDbName = 'mera_paisa.db';
 
@@ -112,6 +113,36 @@ class DbHelper {
       try { await db.execute('CREATE INDEX IF NOT EXISTS idx_exp_user_cat ON expenses(user_id, category)'); } catch(_){}
       try { await db.execute('CREATE INDEX IF NOT EXISTS idx_bud_user_mon ON budgets(user_id, month, year)'); } catch(_){}
     }
+    if (oldVersion < 5) {
+      try {
+        await db.execute('''CREATE TABLE IF NOT EXISTS ai_budget_plans (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id TEXT NOT NULL DEFAULT "default_user",
+          summary TEXT NOT NULL,
+          currency TEXT NOT NULL DEFAULT "INR",
+          monthly_income REAL NOT NULL,
+          feasibility_status TEXT NOT NULL DEFAULT "feasible",
+          deficit REAL DEFAULT 0,
+          allocations_json TEXT NOT NULL,
+          total_essential REAL NOT NULL,
+          total_lifestyle REAL NOT NULL,
+          total_savings REAL NOT NULL,
+          unallocated_balance REAL DEFAULT 0,
+          savings_percentage REAL DEFAULT 0,
+          ai_explanation TEXT NOT NULL,
+          assumptions_json TEXT DEFAULT "[]",
+          financial_warnings_json TEXT DEFAULT "[]",
+          savings_recommendation TEXT DEFAULT "",
+          provider TEXT DEFAULT "gemini",
+          model TEXT DEFAULT "gemini-1.5-flash",
+          is_offline_fallback INTEGER DEFAULT 0,
+          input_json TEXT DEFAULT "",
+          created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL
+        )''');
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_ai_plan_user ON ai_budget_plans(user_id, created_at)');
+      } catch (_) {}
+    }
   }
 
   Future<void> _createAllTables(Database db) async {
@@ -167,10 +198,37 @@ class DbHelper {
       color TEXT DEFAULT "#1B8A5A", icon TEXT DEFAULT "star",
       deadline INTEGER, created_at INTEGER NOT NULL)''');
 
+    await db.execute('''CREATE TABLE IF NOT EXISTS ai_budget_plans (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL DEFAULT "default_user",
+      summary TEXT NOT NULL,
+      currency TEXT NOT NULL DEFAULT "INR",
+      monthly_income REAL NOT NULL,
+      feasibility_status TEXT NOT NULL DEFAULT "feasible",
+      deficit REAL DEFAULT 0,
+      allocations_json TEXT NOT NULL,
+      total_essential REAL NOT NULL,
+      total_lifestyle REAL NOT NULL,
+      total_savings REAL NOT NULL,
+      unallocated_balance REAL DEFAULT 0,
+      savings_percentage REAL DEFAULT 0,
+      ai_explanation TEXT NOT NULL,
+      assumptions_json TEXT DEFAULT "[]",
+      financial_warnings_json TEXT DEFAULT "[]",
+      savings_recommendation TEXT DEFAULT "",
+      provider TEXT DEFAULT "gemini",
+      model TEXT DEFAULT "gemini-1.5-flash",
+      is_offline_fallback INTEGER DEFAULT 0,
+      input_json TEXT DEFAULT "",
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    )''');
+
     await db.execute('CREATE INDEX IF NOT EXISTS idx_exp_user_date ON expenses(user_id, date)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_inc_user_date ON incomes(user_id, date)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_exp_user_cat ON expenses(user_id, category)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_bud_user_mon ON budgets(user_id, month, year)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_ai_plan_user ON ai_budget_plans(user_id, created_at)');
   }
 
   Future<void> _insertDefaultCategories(Database db) async {
@@ -437,6 +495,92 @@ class DbHelper {
   Future<int> deleteGoal(int id, {String userId = 'default_user'}) async =>
     (await database).delete('savings_goals',
       where: 'id = ? AND user_id = ?', whereArgs: [id, userId]);
+
+  // ── AI BUDGET PLANS ──
+  Future<int> insertAiBudgetPlan(AiBudgetPlan plan, {String userId = 'default_user'}) async {
+    final db = await database;
+    final map = plan.copyWith(userId: userId).toMap();
+    return db.insert('ai_budget_plans', map, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<List<AiBudgetPlan>> getAiBudgetPlans({String userId = 'default_user'}) async {
+    final db = await database;
+    final list = await db.query(
+      'ai_budget_plans',
+      where: 'user_id = ?',
+      whereArgs: [userId],
+      orderBy: 'created_at DESC',
+    );
+    return list.map(AiBudgetPlan.fromMap).toList();
+  }
+
+  Future<AiBudgetPlan?> getLatestAiBudgetPlan({String userId = 'default_user'}) async {
+    final db = await database;
+    final list = await db.query(
+      'ai_budget_plans',
+      where: 'user_id = ?',
+      whereArgs: [userId],
+      orderBy: 'created_at DESC',
+      limit: 1,
+    );
+    if (list.isEmpty) return null;
+    return AiBudgetPlan.fromMap(list.first);
+  }
+
+  Future<int> deleteAiBudgetPlan(int id, {String userId = 'default_user'}) async =>
+    (await database).delete(
+      'ai_budget_plans',
+      where: 'id = ? AND user_id = ?',
+      whereArgs: [id, userId],
+    );
+
+  /// Automatically applies the AI Budget Plan's category limits to the monthly budgets table.
+  /// Seamlessly bridges AI-generated budgets to the application's actual budget & expense tracker!
+  Future<void> applyPlanToMonthlyBudgets(
+    AiBudgetPlan plan,
+    int month,
+    int year, {
+    String userId = 'default_user',
+  }) async {
+    final db = await database;
+    final now = DateTime.now();
+
+    for (final alloc in plan.allocations) {
+      if (alloc.amount <= 0) continue;
+
+      final existing = await db.query(
+        'budgets',
+        where: 'user_id = ? AND category = ? AND month = ? AND year = ?',
+        whereArgs: [userId, alloc.category, month, year],
+      );
+
+      final weekly = double.parse((alloc.amount / 4.0).toStringAsFixed(2));
+
+      if (existing.isNotEmpty) {
+        final existingId = existing.first['id'] as int;
+        await db.update(
+          'budgets',
+          {
+            'monthly_limit': alloc.amount,
+            'weekly_limit': weekly,
+          },
+          where: 'id = ? AND user_id = ?',
+          whereArgs: [existingId, userId],
+        );
+      } else {
+        await db.insert('budgets', {
+          'user_id': userId,
+          'category': alloc.category,
+          'monthly_limit': alloc.amount,
+          'weekly_limit': weekly,
+          'alert_percentage': 80.0,
+          'month': month,
+          'year': year,
+          'created_at': now.millisecondsSinceEpoch,
+        });
+      }
+    }
+  }
 
   Future<void> processDueRecurring({String userId = 'default_user'}) async {
     final now = DateTime.now();

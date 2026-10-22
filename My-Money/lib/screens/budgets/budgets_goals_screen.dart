@@ -5,6 +5,7 @@ import '../../providers/app_provider.dart';
 import '../../models/models.dart';
 import '../../utils/theme.dart';
 import '../../widgets/common_widgets.dart';
+import '../ai_budget/ai_budget_planner_screen.dart';
 
 class BudgetsGoalsScreen extends StatefulWidget {
   final int initialTab;
@@ -25,6 +26,16 @@ class _State extends State<BudgetsGoalsScreen>
       backgroundColor:AppTheme.bgDark,
       appBar:AppBar(
         title:Text('Budgets & Goals — ${DateFormat('MMM yyyy').format(DateTime(p.selectedYear,p.selectedMonth))}'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.auto_awesome, color: AppTheme.primary),
+            tooltip: 'AI Monthly Budget Planner',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AiBudgetPlannerScreen()),
+            ),
+          ),
+        ],
         bottom:TabBar(controller:_tab,
           indicatorColor:AppTheme.primary,
           labelColor:AppTheme.primary,
@@ -62,9 +73,61 @@ class _BudgetTab extends StatelessWidget{
             const SizedBox(height:6),
             const Text('Tap + to set a budget',
               style:TextStyle(color:AppTheme.textSecondary)),
+            const SizedBox(height:16),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AiBudgetPlannerScreen()),
+              ),
+              icon: const Icon(Icons.auto_awesome, color: Colors.black, size: 16),
+              label: const Text('Auto-Plan with AI', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+            ),
           ]))
         :ListView(padding:const EdgeInsets.all(16),
-          children:entries.map((e){
+          children:[
+            Container(
+              margin: const EdgeInsets.only(bottom: 14),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [AppTheme.primary.withOpacity(0.18), AppTheme.cardDark],
+                  begin: Alignment.topLeft, end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppTheme.primary.withOpacity(0.35)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.auto_awesome, color: AppTheme.primary, size: 20),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('AI Budget Planner', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white)),
+                        SizedBox(height: 2),
+                        Text('Distribute your monthly income automatically', style: TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
+                      ],
+                    ),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primary,
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      minimumSize: Size.zero,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const AiBudgetPlannerScreen()),
+                    ),
+                    child: const Text('Open', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 11)),
+                  ),
+                ],
+              ),
+            ),
+            ...entries.map((e){
             final limit=weekly?(e.value['weekly_limit']??0):
               (e.value['monthly_limit']??0);
             // for weekly, divide monthly spent by ~4
@@ -104,7 +167,8 @@ class _BudgetTab extends StatelessWidget{
                       fontSize:11)),
                 ]),
               ]));
-          }).toList()),
+          }),
+        ]),
       floatingActionButton:FloatingActionButton(
         backgroundColor:AppTheme.primary,
         onPressed:()=>showModalBottomSheet(context:context,

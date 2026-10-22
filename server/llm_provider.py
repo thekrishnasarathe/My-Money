@@ -503,3 +503,550 @@ class LLMProvider:
             "is_offline_fallback": True,
             "reason": error_reason or "API key not configured"
         }
+
+    def plan_budget(self, budget_input: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        AI-Powered Monthly Budget Planner:
+        Generates a personalized, mathematically verified monthly budget allocation
+        respecting user fixed obligations, occupation context, and financial goals.
+        """
+        self.reload_config()
+        status = self.get_status()
+
+        # 1. Input Extraction and Validation
+        name = str(budget_input.get("name", "")).strip()
+        occupation = str(budget_input.get("occupation", "salaried")).strip().lower()
+        currency = str(budget_input.get("currency", "INR")).strip()
+        try:
+            monthly_income = float(budget_input.get("monthly_income", 0.0))
+        except (ValueError, TypeError):
+            monthly_income = 0.0
+
+        if not name:
+            return {"success": False, "error": "Full name is required to generate a personalized budget."}
+        if monthly_income <= 0:
+            return {"success": False, "error": "Monthly income must be greater than zero."}
+
+        # Optional Inputs & Constraints
+        rent_housing = max(0.0, float(budget_input.get("rent_housing") or 0.0))
+        education_loans = max(0.0, float(budget_input.get("education_loans") or 0.0))
+        existing_savings = max(0.0, float(budget_input.get("existing_savings") or 0.0))
+        financial_goals = str(budget_input.get("financial_goals") or "").strip()
+        savings_target = max(0.0, float(budget_input.get("savings_target") or 0.0))
+        dependents = max(0, int(budget_input.get("dependents") or 0))
+        city_context = str(budget_input.get("city_context") or "").strip()
+        other_expenses = max(0.0, float(budget_input.get("other_expenses") or 0.0))
+
+        # 2. Fixed Obligations & Shortfall Feasibility Assessment
+        fixed_obligations = round(rent_housing + education_loans + other_expenses, 2)
+        if fixed_obligations > monthly_income:
+            deficit = round(fixed_obligations - monthly_income, 2)
+            allocations = []
+            if rent_housing > 0:
+                allocations.append({
+                    "category": "Rent and Housing",
+                    "amount": rent_housing,
+                    "percentage": round((rent_housing / monthly_income) * 100, 2),
+                    "type": "essential",
+                    "explanation": "User-specified fixed housing obligation",
+                    "is_fixed": True
+                })
+            if education_loans > 0:
+                allocations.append({
+                    "category": "Education and Fees",
+                    "amount": education_loans,
+                    "percentage": round((education_loans / monthly_income) * 100, 2),
+                    "type": "debt",
+                    "explanation": "User-specified education / loan obligation",
+                    "is_fixed": True
+                })
+            if other_expenses > 0:
+                allocations.append({
+                    "category": "Other Recurring Obligations",
+                    "amount": other_expenses,
+                    "percentage": round((other_expenses / monthly_income) * 100, 2),
+                    "type": "essential",
+                    "explanation": "User-specified recurring commitments",
+                    "is_fixed": True
+                })
+
+            sym = "₹" if currency == "INR" else f"{currency} "
+            return {
+                "success": True,
+                "summary": f"Deficit Warning: Fixed expenses exceed monthly income by {sym}{deficit:,.2f}",
+                "currency": currency,
+                "monthly_income": monthly_income,
+                "feasibility_status": "shortfall",
+                "deficit": deficit,
+                "allocations": allocations,
+                "total_essential": fixed_obligations,
+                "total_lifestyle": 0.0,
+                "total_savings": 0.0,
+                "unallocated_balance": round(-deficit, 2),
+                "savings_percentage": 0.0,
+                "ai_explanation": (
+                    f"⚠️ **Critical Budget Shortfall**: Your confirmed fixed obligations "
+                    f"({sym}{fixed_obligations:,.2f}) exceed your available monthly income "
+                    f"({sym}{monthly_income:,.2f}) by **{sym}{deficit:,.2f}**.\n\n"
+                    f"• **Priority Review**: Fixed costs account for "
+                    f"**{round((fixed_obligations / monthly_income) * 100, 1)}%** of income.\n"
+                    f"• **Action Required**: Before any discretionary spending or savings can be scheduled, "
+                    f"consider debt restructuring, loan refinancing, downsizing housing, or adding secondary income streams.\n"
+                    f"• **Zero Discretionary Budget**: No funds are allocated to shopping, lifestyle, or investments until this gap is resolved."
+                ),
+                "assumptions": [
+                    "User-specified housing and loan payments represent non-negotiable mandatory commitments."
+                ],
+                "financial_warnings": [
+                    f"Immediate shortfall of {sym}{deficit:,.2f}/month.",
+                    "Discretionary spending suspended until fixed costs align with income."
+                ],
+                "savings_recommendation": f"Prioritize debt reduction and restructuring to eliminate the {sym}{deficit:,.2f} deficit.",
+                "provider": "application-logic",
+                "model": "ground-truth-validator",
+                "is_offline_fallback": False
+            }
+
+        # 3. Live LLM Generation (if configured)
+        if status["is_configured"]:
+            try:
+                sym = "₹" if currency == "INR" else f"{currency} "
+                prompt = (
+                    f"Generate a personalized monthly budget plan for:\n"
+                    f"- User Name: {name}\n"
+                    f"- Occupation: {occupation}\n"
+                    f"- Total Monthly Income / Available Budget: {currency} {monthly_income}\n"
+                    f"- Confirmed Housing Cost: {currency} {rent_housing} ({'Specified constraint' if rent_housing > 0 else 'Not specified'})\n"
+                    f"- Confirmed Education / Loan Payments: {currency} {education_loans} ({'Specified constraint' if education_loans > 0 else 'None'})\n"
+                    f"- Existing Savings: {currency} {existing_savings}\n"
+                    f"- Stated Goals: '{financial_goals or 'Build healthy financial foundation'}'\n"
+                    f"- Preferred Monthly Savings Target: {currency} {savings_target if savings_target > 0 else 'Auto-optimize'}\n"
+                    f"- Dependents: {dependents}\n"
+                    f"- City / Cost-of-Living: '{city_context or 'Standard'}'\n"
+                    f"- Other Fixed Expenses: {currency} {other_expenses}\n\n"
+                    f"FINANCIAL RULES & CONSTRAINTS:\n"
+                    f"1. Total Monthly Allocations MUST exactly equal {monthly_income}.\n"
+                    f"2. If Rent is specified ({rent_housing}), allocation for Rent and Housing MUST be exactly {rent_housing}.\n"
+                    f"3. If Education/Loan is specified ({education_loans}), allocation MUST be exactly {education_loans}.\n"
+                    f"4. Adapt category distribution to occupation and lifestyle. For example, a student living with parents needs less for rent, "
+                    f"while an independent earner needs realistic living allowances.\n"
+                    f"5. Only include relevant categories from: Rent and Housing, Food and Groceries, Transportation, "
+                    f"Education and Fees, Utilities and Bills, Healthcare, Essential Personal Expenses, Shopping and Lifestyle, "
+                    f"Entertainment, Family and Dependents, Debt and Loan Payments, Emergency Fund, Savings and Investments, Miscellaneous Expenses.\n"
+                    f"6. Never recommend investing before essential expenses and required debt payments are met.\n"
+                    f"7. Do not guarantee investment returns.\n\n"
+                    f"Reply ONLY in valid JSON matching this structure:\n"
+                    f"{{\n"
+                    f'  "summary": "<1-2 sentence executive summary of the budget>",\n'
+                    f'  "feasibility_status": "feasible" | "tight",\n'
+                    f'  "allocations": [\n'
+                    f'    {{"category": "<Category Name>", "amount": <number>, "type": "essential"|"discretionary"|"debt"|"savings", "explanation": "<short reason>"}}\n'
+                    f"  ],\n"
+                    f'  "ai_explanation": "<Detailed personalized explanation covering: 1. Why major allocations were chosen, 2. Which expenses to prioritize, 3. Where user can save, 4. How it supports goals, 5. Assumptions needing confirmation>",\n'
+                    f'  "assumptions": ["<assumption 1>", "<assumption 2>"],\n'
+                    f'  "financial_warnings": ["<warning or advisory 1>"],\n'
+                    f'  "savings_recommendation": "<recommendation on emergency fund and goal savings>"\n'
+                    f"}}"
+                )
+
+                raw = self.generate_completion(prompt)
+                parsed = self._extract_json(raw)
+                if parsed and isinstance(parsed.get("allocations"), list) and len(parsed["allocations"]) > 0:
+                    normalized = self._normalize_budget_plan(
+                        parsed, monthly_income, currency, rent_housing, education_loans, other_expenses,
+                        status["provider"], status["model"], is_offline=False
+                    )
+                    return normalized
+            except Exception as e:
+                logger.warning(f"Live budget generation failed ({e}). Falling back to rule-based planner.")
+
+        # 4. Deterministic Offline Analytical Planner Fallback
+        return self._offline_budget_planner_fallback(budget_input, status)
+
+    def _extract_json(self, raw: str) -> Optional[Dict[str, Any]]:
+        """Safely extracts JSON from LLM markdown code blocks or raw text."""
+        cleaned = raw.strip()
+        if "```json" in cleaned:
+            cleaned = cleaned.split("```json", 1)[1].split("```", 1)[0]
+        elif "```" in cleaned:
+            cleaned = cleaned.split("```", 1)[1].split("```", 1)[0]
+        cleaned = cleaned.strip()
+
+        try:
+            return json.loads(cleaned)
+        except json.JSONDecodeError:
+            start = cleaned.find("{")
+            end = cleaned.rfind("}")
+            if start != -1 and end != -1 and end > start:
+                try:
+                    return json.loads(cleaned[start:end + 1])
+                except json.JSONDecodeError:
+                    pass
+        return None
+
+    def _normalize_budget_plan(
+        self,
+        plan: Dict[str, Any],
+        monthly_income: float,
+        currency: str,
+        rent_housing: float,
+        education_loans: float,
+        other_expenses: float,
+        provider: str,
+        model: str,
+        is_offline: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Application-logic financial normalizer:
+        - Strictly preserves user-confirmed fixed constraints.
+        - De-duplicates categories.
+        - Ensures Sum(allocations) == monthly_income.
+        - Recalculates all exact percentages and summary metrics.
+        """
+        raw_allocs = plan.get("allocations", [])
+        allocations_map: Dict[str, Dict[str, Any]] = {}
+
+        for a in raw_allocs:
+            cat = str(a.get("category", "")).strip()
+            if not cat:
+                continue
+            amt = max(0.0, round(float(a.get("amount", 0.0)), 2))
+            cat_type = str(a.get("type", "discretionary")).lower()
+            if cat_type not in ["essential", "discretionary", "debt", "savings"]:
+                cat_type = "discretionary"
+            exp = str(a.get("explanation", ""))
+
+            if cat in allocations_map:
+                allocations_map[cat]["amount"] = round(allocations_map[cat]["amount"] + amt, 2)
+            else:
+                allocations_map[cat] = {
+                    "category": cat,
+                    "amount": amt,
+                    "type": cat_type,
+                    "explanation": exp,
+                    "is_fixed": False
+                }
+
+        # Enforce Fixed Constraints
+        if rent_housing > 0:
+            housing_key = next((k for k in allocations_map if "rent" in k.lower() or "housing" in k.lower()), "Rent and Housing")
+            allocations_map[housing_key] = {
+                "category": housing_key,
+                "amount": rent_housing,
+                "type": "essential",
+                "explanation": "User-confirmed fixed housing cost",
+                "is_fixed": True
+            }
+
+        if education_loans > 0:
+            edu_key = next((k for k in allocations_map if "education" in k.lower() or "loan" in k.lower() or "debt" in k.lower()), "Education and Fees")
+            allocations_map[edu_key] = {
+                "category": edu_key,
+                "amount": education_loans,
+                "type": "debt",
+                "explanation": "User-confirmed fixed education/loan obligation",
+                "is_fixed": True
+            }
+
+        if other_expenses > 0:
+            allocations_map["Other Recurring Obligations"] = {
+                "category": "Other Recurring Obligations",
+                "amount": other_expenses,
+                "type": "essential",
+                "explanation": "User-confirmed recurring commitments",
+                "is_fixed": True
+            }
+
+        alloc_list = list(allocations_map.values())
+
+        # Mathematical Reconciliation: Sum(allocations) must equal monthly_income
+        current_sum = round(sum(a["amount"] for a in alloc_list), 2)
+        diff = round(monthly_income - current_sum, 2)
+
+        if abs(diff) > 0.01:
+            if diff > 0:
+                target = next((a for a in alloc_list if a["category"] in ["Emergency Fund", "Savings and Investments", "Miscellaneous Expenses"] and not a.get("is_fixed", False)), None)
+                if target:
+                    target["amount"] = round(target["amount"] + diff, 2)
+                else:
+                    alloc_list.append({
+                        "category": "Miscellaneous Expenses",
+                        "amount": diff,
+                        "type": "discretionary",
+                        "explanation": "Unallocated balance buffered to maintain 100% budget match",
+                        "is_fixed": False
+                    })
+            else:
+                to_trim = abs(diff)
+                for a in alloc_list:
+                    if a.get("type") == "discretionary" and not a.get("is_fixed", False) and a["amount"] > 0:
+                        reduction = min(a["amount"], to_trim)
+                        a["amount"] = round(a["amount"] - reduction, 2)
+                        to_trim = round(to_trim - reduction, 2)
+                        if to_trim <= 0.01:
+                            break
+                if to_trim > 0.01:
+                    for a in alloc_list:
+                        if a.get("type") == "savings" and not a.get("is_fixed", False) and a["amount"] > 0:
+                            reduction = min(a["amount"], to_trim)
+                            a["amount"] = round(a["amount"] - reduction, 2)
+                            to_trim = round(to_trim - reduction, 2)
+                            if to_trim <= 0.01:
+                                break
+
+        # Filter out 0 amounts unless fixed
+        alloc_list = [a for a in alloc_list if a["amount"] > 0 or a.get("is_fixed", False)]
+
+        # Recalculate percentages & summary metrics
+        for a in alloc_list:
+            a["percentage"] = round((a["amount"] / monthly_income) * 100, 2)
+
+        total_essential = round(sum(a["amount"] for a in alloc_list if a.get("type") in ["essential", "debt"]), 2)
+        total_lifestyle = round(sum(a["amount"] for a in alloc_list if a.get("type") == "discretionary"), 2)
+        total_savings = round(sum(a["amount"] for a in alloc_list if a.get("type") == "savings"), 2)
+        unallocated_balance = round(monthly_income - (total_essential + total_lifestyle + total_savings), 2)
+        savings_percentage = round((total_savings / monthly_income) * 100, 2)
+
+        feasibility_status = "tight" if (total_essential / monthly_income) > 0.70 else "feasible"
+
+        return {
+            "success": True,
+            "summary": plan.get("summary", f"Personalized Monthly Budget Plan for {currency} {monthly_income:,.2f}"),
+            "currency": currency,
+            "monthly_income": monthly_income,
+            "feasibility_status": feasibility_status,
+            "allocations": alloc_list,
+            "total_essential": total_essential,
+            "total_lifestyle": total_lifestyle,
+            "total_savings": total_savings,
+            "unallocated_balance": unallocated_balance,
+            "savings_percentage": savings_percentage,
+            "ai_explanation": plan.get("ai_explanation", "Budget distribution tailored to your income profile and fixed obligations."),
+            "assumptions": plan.get("assumptions", ["User-provided financial numbers reflect current monthly standing."]),
+            "financial_warnings": plan.get("financial_warnings", []),
+            "savings_recommendation": plan.get("savings_recommendation", f"Aim to save {savings_percentage}% of your income consistently."),
+            "provider": provider,
+            "model": model,
+            "is_offline_fallback": is_offline
+        }
+
+    def _offline_budget_planner_fallback(
+        self, budget_input: Dict[str, Any], status: Dict[str, Any], error_reason: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Deterministic, rule-based personalized financial allocation algorithm.
+        Used when LLM backend is offline or unconfigured.
+        Guarantees 100% mathematical integrity: Sum(allocations) == monthly_income.
+        """
+        name = str(budget_input.get("name", "User")).strip()
+        occupation = str(budget_input.get("occupation", "salaried")).strip().lower()
+        currency = str(budget_input.get("currency", "INR")).strip()
+        monthly_income = float(budget_input.get("monthly_income", 0.0))
+
+        rent_housing = max(0.0, float(budget_input.get("rent_housing") or 0.0))
+        education_loans = max(0.0, float(budget_input.get("education_loans") or 0.0))
+        existing_savings = max(0.0, float(budget_input.get("existing_savings") or 0.0))
+        financial_goals = str(budget_input.get("financial_goals") or "").strip()
+        savings_target = max(0.0, float(budget_input.get("savings_target") or 0.0))
+        dependents = max(0, int(budget_input.get("dependents") or 0))
+        city_context = str(budget_input.get("city_context") or "").strip()
+        other_expenses = max(0.0, float(budget_input.get("other_expenses") or 0.0))
+
+        sym = "₹" if currency == "INR" else f"{currency} "
+        fixed_obligations = round(rent_housing + education_loans + other_expenses, 2)
+        remaining = max(0.0, round(monthly_income - fixed_obligations, 2))
+
+        allocations: List[Dict[str, Any]] = []
+
+        # 1. Mandatory Fixed Allocations
+        if rent_housing > 0:
+            allocations.append({
+                "category": "Housing",
+                "amount": rent_housing,
+                "type": "essential",
+                "explanation": "User-specified fixed housing obligation",
+                "is_fixed": True
+            })
+        if education_loans > 0:
+            allocations.append({
+                "category": "Education Fees",
+                "amount": education_loans,
+                "type": "debt",
+                "explanation": "User-specified education/loan commitment",
+                "is_fixed": True
+            })
+        if other_expenses > 0:
+            allocations.append({
+                "category": "Other Obligations",
+                "amount": other_expenses,
+                "type": "essential",
+                "explanation": "User-specified recurring commitments",
+                "is_fixed": True
+            })
+
+        # 2. Determine Savings Allocation
+        if savings_target > 0:
+            target_savings = min(savings_target, remaining * 0.45)
+        else:
+            if "student" in occupation:
+                target_savings = remaining * 0.20
+            elif "freelancer" in occupation or "self-employed" in occupation or "business" in occupation:
+                target_savings = remaining * 0.25
+            else:
+                target_savings = remaining * 0.20
+
+        target_savings = round(target_savings, 2)
+        emergency_fund = round(target_savings * 0.40, 2)
+        goal_savings = round(target_savings - emergency_fund, 2)
+
+        pool_for_living = max(0.0, round(remaining - target_savings, 2))
+
+        # 3. Dynamic Living Expense Distribution based on Occupation Heuristics
+        if "student" in occupation:
+            weights = {
+                "Food and Groceries": 0.40,
+                "Transportation": 0.15,
+                "Utilities and Phone": 0.08,
+                "Healthcare and Essentials": 0.10,
+                "Shopping and Lifestyle": 0.12,
+                "Entertainment": 0.08,
+                "Miscellaneous": 0.07,
+            }
+        elif "freelancer" in occupation or "self-employed" in occupation:
+            weights = {
+                "Food and Groceries": 0.32,
+                "Transportation": 0.12,
+                "Utilities and Bills": 0.14,
+                "Healthcare": 0.10,
+                "Shopping and Lifestyle": 0.14,
+                "Entertainment": 0.08,
+                "Miscellaneous": 0.10,
+            }
+        else:
+            weights = {
+                "Food and Groceries": 0.34,
+                "Transportation": 0.14,
+                "Utilities and Bills": 0.12,
+                "Healthcare": 0.08,
+                "Shopping and Lifestyle": 0.14,
+                "Entertainment": 0.10,
+                "Miscellaneous": 0.08,
+            }
+
+        if dependents > 0:
+            weights["Family and Dependents"] = 0.15
+            factor = 0.85
+            for k in list(weights.keys()):
+                if k != "Family and Dependents":
+                    weights[k] = round(weights[k] * factor, 4)
+
+        cat_types = {
+            "Food and Groceries": "essential",
+            "Transportation": "essential",
+            "Utilities and Phone": "essential",
+            "Utilities and Bills": "essential",
+            "Healthcare and Essentials": "essential",
+            "Healthcare": "essential",
+            "Family and Dependents": "essential",
+            "Shopping and Lifestyle": "discretionary",
+            "Entertainment": "discretionary",
+            "Miscellaneous": "discretionary",
+        }
+
+        allocated_living = 0.0
+        weight_keys = list(weights.keys())
+        for k in weight_keys[:-1]:
+            nominal = round(pool_for_living * weights[k], 2)
+            if nominal > 0:
+                allocations.append({
+                    "category": k,
+                    "amount": nominal,
+                    "type": cat_types.get(k, "essential"),
+                    "explanation": f"Recommended allocation for {k.lower()} based on your financial profile",
+                    "is_fixed": False
+                })
+                allocated_living += nominal
+
+        last_cat = weight_keys[-1]
+        last_amt = max(0.0, round(pool_for_living - allocated_living, 2))
+        if last_amt > 0:
+            allocations.append({
+                "category": last_cat,
+                "amount": last_amt,
+                "type": cat_types.get(last_cat, "discretionary"),
+                "explanation": "Buffer allowance for incidental expenses",
+                "is_fixed": False
+            })
+
+        if emergency_fund > 0:
+            allocations.append({
+                "category": "Emergency Savings",
+                "amount": emergency_fund,
+                "type": "savings",
+                "explanation": "Buffer against unexpected expenses or medical urgencies",
+                "is_fixed": False
+            })
+        if goal_savings > 0:
+            allocations.append({
+                "category": "Goal-Based Savings",
+                "amount": goal_savings,
+                "type": "savings",
+                "explanation": f"Dedicated savings for stated goals ({financial_goals or 'Personal Savings'})",
+                "is_fixed": False
+            })
+
+        current_sum = round(sum(a["amount"] for a in allocations), 2)
+        diff = round(monthly_income - current_sum, 2)
+        if abs(diff) > 0.001 and allocations:
+            for a in reversed(allocations):
+                if not a.get("is_fixed", False):
+                    a["amount"] = round(a["amount"] + diff, 2)
+                    break
+
+        for a in allocations:
+            a["percentage"] = round((a["amount"] / monthly_income) * 100, 2)
+
+        total_essential = round(sum(a["amount"] for a in allocations if a["type"] in ["essential", "debt"]), 2)
+        total_lifestyle = round(sum(a["amount"] for a in allocations if a["type"] == "discretionary"), 2)
+        total_savings = round(sum(a["amount"] for a in allocations if a["type"] == "savings"), 2)
+        savings_percentage = round((total_savings / monthly_income) * 100, 2)
+
+        explanation = (
+            f"### [AI Analytical Budget Strategy for {name}]\n\n"
+            f"• **Income Distribution**: Out of your {sym}{monthly_income:,.2f} monthly budget, "
+            f"**{sym}{total_essential:,.2f}** ({round(total_essential/monthly_income*100, 1)}%) covers essential living & obligations, "
+            f"**{sym}{total_lifestyle:,.2f}** ({round(total_lifestyle/monthly_income*100, 1)}%) is allocated to lifestyle, and "
+            f"**{sym}{total_savings:,.2f}** ({savings_percentage}%) is committed to your future goals.\n\n"
+            f"• **Priority Allocations**: Confirmed housing ({sym}{rent_housing:,.2f}) and debt/education ({sym}{education_loans:,.2f}) "
+            f"have been safeguarded without alteration.\n\n"
+            f"• **Savings Strategy**: Monthly savings of {sym}{total_savings:,.2f} builds your emergency fund and funds your stated target: *'{financial_goals or 'Personal Savings'}'*.\n\n"
+            f"• **Flexibility**: Discretionary categories (Shopping & Entertainment) can be adjusted in the interactive editor below before finalizing."
+        )
+
+        return {
+            "success": True,
+            "summary": f"Analytical Budget Plan: {sym}{monthly_income:,.2f} ({occupation.title()})",
+            "currency": currency,
+            "monthly_income": monthly_income,
+            "feasibility_status": "tight" if (total_essential / monthly_income) > 0.70 else "feasible",
+            "allocations": allocations,
+            "total_essential": total_essential,
+            "total_lifestyle": total_lifestyle,
+            "total_savings": total_savings,
+            "unallocated_balance": 0.0,
+            "savings_percentage": savings_percentage,
+            "ai_explanation": explanation,
+            "assumptions": [
+                "Allocations calibrated to regional living benchmarks for your occupation.",
+                "Non-essential expenses can be dialed back if unforeseen costs arise."
+            ],
+            "financial_warnings": [
+                "Discretionary spending should be tracked weekly to prevent lifestyle creep."
+            ],
+            "savings_recommendation": f"Consistently deposit {sym}{total_savings:,.2f} into high-yield savings at the start of each month.",
+            "provider": "offline-rule-engine",
+            "model": "deterministic-budget-planner",
+            "is_offline_fallback": True,
+            "reason": error_reason or "Backend running in deterministic offline mode"
+        }
+

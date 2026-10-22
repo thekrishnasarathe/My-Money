@@ -17,6 +17,7 @@ import 'more/security_screen.dart';
 import 'about_screen.dart';
 import 'debts/debts_screen.dart';
 import 'ai_coach/ai_coach_screen.dart';
+import 'ai_budget/ai_budget_planner_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -29,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static const _navItems = [
     _NavItem(Icons.home_outlined, Icons.home, 'Home'),
     _NavItem(Icons.auto_awesome_outlined, Icons.auto_awesome, 'AI Coach'),
+    _NavItem(Icons.calculate_outlined, Icons.calculate, 'AI Planner'),
     _NavItem(Icons.receipt_long_outlined, Icons.receipt_long, 'Transactions'),
     _NavItem(Icons.pie_chart_outline, Icons.pie_chart, 'Analytics'),
     _NavItem(Icons.grid_view_outlined, Icons.grid_view, 'Categories'),
@@ -45,6 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static const _pages = [
     DashboardScreen(),
     AiCoachScreen(),
+    AiBudgetPlannerScreen(),
     TransactionsScreen(),
     AnalyticsScreen(),
     CategoriesScreen(),

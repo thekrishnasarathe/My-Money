@@ -3,6 +3,8 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/ai_budget_plan.dart';
+import 'ai_budget_planner_fallback.dart';
 
 class AiCoachResponse {
   final bool success;
@@ -251,6 +253,48 @@ class AiCoachService {
       debugPrint('AI Categorization skip/fallback: ');
     }
     return null;
+  }
+
+  /// AI-Powered Monthly Budget Planner:
+  /// Connects to POST /api/ai/budget-planner on the backend server.
+  /// Falls back smoothly to AiBudgetPlannerFallbackEngine if offline or unreachable.
+  Future<AiBudgetPlan> generateBudgetPlan(AiBudgetInput input) async {
+    final validationError = input.validate();
+    if (validationError != null) {
+      throw ArgumentError(validationError);
+    }
+
+    try {
+      final base = await getBaseUrl();
+      final uri = Uri.parse('$base/api/ai/budget-planner');
+      final payload = json.encode(input.toMap());
+
+      final res = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: payload,
+      ).timeout(_kTimeout);
+
+      if (res.statusCode == 200) {
+        final data = json.decode(utf8.decode(res.bodyBytes));
+        if (data['success'] == true) {
+          return AiBudgetPlan.fromMap(data).copyWith(input: input);
+        } else {
+          final err = data['error'] ?? 'AI budget generation failed';
+          debugPrint('Backend budget planner returned error: $err. Falling back to local engine.');
+          return AiBudgetPlannerFallbackEngine.generate(input, reason: err);
+        }
+      } else {
+        debugPrint('Backend HTTP ${res.statusCode}. Falling back to local engine.');
+        return AiBudgetPlannerFallbackEngine.generate(
+          input,
+          reason: 'Server error (${res.statusCode}): ${res.body}',
+        );
+      }
+    } catch (e) {
+      debugPrint('Backend connection error: $e. Falling back to local deterministic engine.');
+      return AiBudgetPlannerFallbackEngine.generate(input, reason: e.toString());
+    }
   }
 
   String _parseError(String body) {

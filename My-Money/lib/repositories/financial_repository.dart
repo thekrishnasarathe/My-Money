@@ -4,6 +4,7 @@ import '../models/expense.dart';
 import '../models/income.dart';
 import '../models/debt.dart';
 import '../models/models.dart';
+import '../models/ai_budget_plan.dart';
 
 /// Centralized Financial Repository enforcing multi-user isolation
 /// and abstraction over database operations.
@@ -133,4 +134,20 @@ class FinancialRepository {
   // ── RECURRING CRON PROCESS ──
   Future<void> processDueRecurring() =>
     _db.processDueRecurring(userId: _currentUserId);
+
+  // ── AI BUDGET PLANS ──
+  Future<int> saveAiBudgetPlan(AiBudgetPlan plan) =>
+    _db.insertAiBudgetPlan(plan.copyWith(userId: _currentUserId), userId: _currentUserId);
+
+  Future<List<AiBudgetPlan>> getAiBudgetPlans() =>
+    _db.getAiBudgetPlans(userId: _currentUserId);
+
+  Future<AiBudgetPlan?> getLatestAiBudgetPlan() =>
+    _db.getLatestAiBudgetPlan(userId: _currentUserId);
+
+  Future<int> deleteAiBudgetPlan(int id) =>
+    _db.deleteAiBudgetPlan(id, userId: _currentUserId);
+
+  Future<void> applyPlanToMonthlyBudgets(AiBudgetPlan plan, int month, int year) =>
+    _db.applyPlanToMonthlyBudgets(plan, month, year, userId: _currentUserId);
 }

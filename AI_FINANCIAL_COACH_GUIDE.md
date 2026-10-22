@@ -61,6 +61,7 @@ This integration strictly follows the **Non-Negotiable Directive**:
 | 6 | **Natural-Language Summaries** | AI Coach Quick Prompt Chip | `POST /api/ai/summary` | Instant executive narrative summarizing income, expenses, and cash flow. |
 | 7 | **Spending Anomaly Explanations** | AI Coach > Spending Insights Tab | `POST /api/ai/insights` | Detects transactions exceeding 35% of total budget or sudden category spikes. |
 | 8 | **AI Data Categorization Assistance** | Add Transaction Sheet | `POST /api/ai/categorize` | 'AI Auto-Detect' suggestion chip matching transaction name against verified schema. |
+| 9 | **AI Monthly Budget Planner** | Bottom Nav 'AI Planner', Budgets & Dashboard | `POST /api/ai/budget-planner` | Personalized monthly budget allocation respecting user fixed obligations, goals, and occupation with interactive editor, recalculations, charts, and budget tracker integration. |
 
 ---
 
@@ -121,6 +122,10 @@ flutter test
   - `Scenario 3: First launch ever (no cache) defaults to allowed` (PASSED)
 - `test/widget_test.dart`:
   - `AiCoachScreen renders correctly with tabs and prompt chips` (PASSED)
+  - `AiBudgetPlannerScreen renders form and empty/loaded state properly` (PASSED)
+  - `AiBudgetPlannerScreen renders dashboard when initialPlan provided` (PASSED)
+- `test/ai_budget_planner_test.dart`:
+  - `15/15 unit tests passed covering validation, shortfall, recalculation, rebalancing, deduplication, and persistence` (PASSED)
 
-**Result: 10/10 tests passed.**
+**Result: 27/27 tests passed.**
 **Web Release Compilation: `flutter build web --release` successfully completed.**
