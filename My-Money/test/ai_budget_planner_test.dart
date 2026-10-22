@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:my_money/models/ai_budget_plan.dart';
 import 'package:my_money/services/ai_budget_planner_fallback.dart';

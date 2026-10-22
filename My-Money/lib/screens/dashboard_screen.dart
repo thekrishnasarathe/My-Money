@@ -1119,7 +1119,6 @@ class _TopCategories extends StatelessWidget {
           ),
           child: Column(children: top.asMap().entries.map((e) {
             final idx = e.key; final cat = e.value;
-            final color = AppTheme.getCategoryColor(cat.key);
             final pct = p.totalExpensesThisMonth > 0
               ? cat.value / p.totalExpensesThisMonth * 100 : 0;
             return ListTile(

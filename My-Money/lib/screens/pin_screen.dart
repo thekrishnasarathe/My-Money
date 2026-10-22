@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../utils/theme.dart';
-import '../utils/constants.dart';
 import '../utils/security_utils.dart';
 import '../utils/secure_store.dart';
 import 'home_screen.dart';

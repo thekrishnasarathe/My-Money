@@ -28,7 +28,6 @@ class SecureStore {
     final prefs = await SharedPreferences.getInstance();
 
     final oldHash = prefs.getString(AppConstants.kPinHash);
-    final oldSalt = prefs.getString(AppConstants.kPinSalt);
     final pinEnabled = prefs.getBool(AppConstants.kPinEnabled) ?? false;
 
     if (pinEnabled && oldHash != null && oldHash.isNotEmpty) {

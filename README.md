@@ -1,283 +1,334 @@
-# MONEY - Personal Finance Ecosystem 💎
-### *Complete 0% to 100% Product Creation & Technical Architecture Blueprint*
+# MONEY — AI-Powered Personal Finance Coach
 
-![Product Version](https://img.shields.io/badge/version-1.1.0%2B2--release-blue.svg)
-![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)
-![Ownership](https://img.shields.io/badge/owner-Krishna%20Sarathe-orange.svg)
-![Security](https://img.shields.io/badge/security-Salted%20SHA--256%20%7C%20Anonymous%20Auth-red.svg)
-![Platform](https://img.shields.io/badge/platform-Android%20%7C%20Web%20%7C%20Windows-green.svg)
+[![Flutter Build](https://img.shields.io/badge/Flutter-3.24.5-blue.svg)](https://flutter.dev)
+[![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-29%2F29%20Passed-success.svg)]()
+[![Design](https://img.shields.io/badge/Design-Luxury%20Private%20Banking-D4AF37.svg)]()
+[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20Web-green.svg)]()
+[![Security](https://img.shields.io/badge/Security-Salted%20SHA--256%20%7C%20Hardware%20Keystore-red.svg)]()
+
+> **Smart FinTech Hackathon Project**: An ultra-premium personal finance ecosystem combining an offline-first SQLite core with dual-model conversational intelligence powered by **Google Gemini** and **Groq Cloud**.
 
 ---
 
-## 👨‍💻 Ownership & Creator Information
+## 1. Overview
 
-- **Product Name**: `MONEY` (App Launcher Icon Label) / `My-Money`
-- **Product Owner & Lead Engineer**: **Krishna Sarathe**
-- **Official Contact**: `thekrishnasarathe000@gmail.com`
-- **Package Identifier**: `com.krishnasarathe.mymoney`
-- **Current Version**: `1.1.0+2`
+**MONEY** transforms personal financial management from a passive recording chore into an active, private-banking advisory experience. Built for young earners, salaried professionals, students, and gig economy workers, MONEY couples deterministic mathematical ledgers with proactive, context-aware AI coaching.
+
+The application follows an **offline-first philosophy**: all financial transactions, account ledgers, budgets, and savings goals remain private on the user's device in an indexed SQLite database. When guidance is requested, aggregated financial context is prepared on-device and analyzed via a quarantined AI microservice, ensuring that financial figures are verified deterministically before interpretation by the LLM.
+
+---
+
+## 2. Problem Statement
+
+Young professionals and students frequently face financial stress, debt accumulation, and uncontrolled discretionary burn. Traditional personal finance applications present several critical friction points:
+
+1. **Passive "Post-Mortem" Tracking**: Most apps record expenses without providing proactive guidance on how to rebalance outflows before the month ends.
+2. **Privacy Concerns & Ad Tracking**: Many cloud-based finance apps sell aggregated consumer transaction data to advertisers and loan providers.
+3. **AI Hallucinations in Financial Calculations**: Generic chatbots invent mathematical figures when asked to calculate balances or budget allocations.
+4. **Uninspiring Interface Aesthetics**: Generic SaaS designs make daily budgeting feel punitive rather than empowering.
+
+MONEY addresses these challenges with **offline-first data ownership**, a **luxury private-banking aesthetic**, and an **AI architecture where math is solved deterministically while advice is formulated by the LLM**.
+
+---
+
+## 3. Features
+
+### ✅ Implemented & Verified Capabilities
+
+- **Ultra-Premium Luxury FinTech Interface**: Adheres to the official private-banking palette (Jet Black `#000000`, Charcoal Grey `#1C1C24`, Forest Green `#0B2E20`, Emerald Green `#0F6B4F`, Champagne Gold `#D4AF37`, Deep Crimson `#8B0000`).
+- **Dominant Financial Balance**: Real-time monthly net cash flow with an instantaneous toggle to all-time wealth accumulation.
+- **Dynamic Burn Indicators**: Real-time calculation of savings percentage, transaction count, and daily average burn rate.
+- **AI Financial Coach (Gemini & Groq)**: Natural-language advisory analyzing spending patterns, top outflows, and discretionary leaks with automatic failover.
+- **AI Monthly Budget Planner**: Zero-based budget generator using the 50/30/20 framework with feasibility checks, shortfall detection, and real-time interactive rebalancing.
+- **13 Specialized Navigation Hubs**: Home, AI Coach, AI Planner, Transactions, Analytics, Categories, Expenses, Debts, Budgets, Accounts, Limits, Data Export, and Settings.
+- **Interactive Analytics**: Touch-interactive pie charts, category breakdowns, and 6-month historical outflow trends (`fl_chart`).
+- **Multi-Account & Debt Ledgers**: Track balances across Cash, Bank, UPI, and Credit Cards, alongside borrower/lender debt obligations.
+- **Statement & Data Export**: Generates print-ready PDF statements and CSV ledgers for accounting and tax preparation.
+- **Hardware-Backed PIN Security**: Salted SHA-256 PIN hashing with per-device 32-byte salts stored in Android `EncryptedSharedPreferences` / iOS Keychain.
+- **Cloud Remote Kill-Switch**: Remote device lockout telemetry via Cloud Firestore to protect financial data on lost or compromised devices.
+
+### 🔮 Planned Future Enhancements
+
+- RBI-regulated Account Aggregator (AA) direct bank feed integration.
+- Live Forex multi-currency automated conversion.
+- On-device quantized Small Language Model (Gemma 2B) for 100% offline edge inference.
+
+---
+
+## 4. Technology Stack
+
+| Layer | Technology | Details |
+| :--- | :--- | :--- |
+| **Frontend Framework** | **Flutter 3.24.5** / **Dart 3.5.4** | Multi-platform client targeting Android & Web |
+| **State Management** | **Provider 6.1.1** | Reactive change notification with memoized caching |
+| **Local Database** | **SQLite (`sqflite: ^2.3.2`)** | Embedded relational database with schema migration engine (v1–v5) |
+| **Secure Storage** | **`flutter_secure_storage: ^9.2.4`** | Hardware keystore/keychain encrypted storage |
+| **Biometrics & Crypto** | **`local_auth: ^2.1.8`, `crypto: ^3.0.3`** | Hardware biometric unlock & salted SHA-256 hashing |
+| **Charts & Visuals** | **`fl_chart: ^0.68.0`** | Interactive vector charts with custom touch tooltips |
+| **Reporting** | **`pdf: ^3.10.8`, `csv: ^6.0.0`** | Native vector PDF rendering and tabular CSV export |
+| **AI Microservice** | **Python 3.10+ (`http.server`)** | Stateless REST microservice with rate limiting & CORS |
+| **Primary LLM** | **Google Gemini 1.5 Flash** | High-speed, structured JSON financial guidance |
+| **Failover LLM** | **Groq Cloud LLaMA 3.3 70B** | Hardware-accelerated sub-500ms backup inference |
+
+---
+
+## 5. System Architecture
+
+```mermaid
+flowchart TD
+    subgraph MobileClient["Flutter Client (Android & Web)"]
+        UI["Luxury Presentation Layer\n(Jet Black / Champagne Gold / Emerald / Crimson)"]
+        State["AppProvider (State Bus & Memoized Caches)"]
+        Repo["FinancialRepository (Data Access Layer)"]
+        SQLite[("Local SQLite Database (money.db - v5)")]
+        SecureStore["SecureStore (Salted SHA-256 in Keystore)"]
+        ContextBuilder["FinancialContextBuilder (Deterministic Aggregator)"]
+    end
+
+    subgraph BackendProxy["AI Backend Microservice (Python)"]
+        Server["server.py (ThreadingHTTPServer, Port 8000)"]
+        LLMProvider["LLMProvider (Failover Engine)"]
+        Heuristic["Heuristic Rule Engine (50/30/20 Fallback)"]
+    end
+
+    subgraph External["External Cloud APIs"]
+        Gemini["Google Gemini 1.5 Flash"]
+        Groq["Groq Cloud LLaMA 3.3 70B"]
+        Firebase["Google Cloud Firestore (Remote Lock)"]
+    end
+
+    UI --> State
+    State --> Repo
+    Repo --> SQLite
+    UI -.-> SecureStore
+    State --> ContextBuilder
+    ContextBuilder -->|HTTPS REST| Server
+    Server --> LLMProvider
+    LLMProvider -->|Primary| Gemini
+    LLMProvider -->|Failover (HTTP 429/500)| Groq
+    LLMProvider -.->|Offline Fallback| Heuristic
+    UI -.->|Telemetry Status| Firebase
+```
+
+---
+
+## 6. Project Structure
+
+```text
+My-Money/
+├── android/                      # Native Android configuration (Kotlin DSL, MinSDK 21)
+├── assets/                       # Image assets and application iconography
+├── lib/
+│   ├── database/                 # SQLite helper (db_helper.dart) & v1->v5 migration engine
+│   ├── models/                   # Immutable models (Expense, Income, AiBudgetPlan, Debt, Account)
+│   ├── providers/                # AppProvider state bus & analytical caching
+│   ├── repositories/             # FinancialRepository data-access layer
+│   ├── screens/                  # 13 application hubs:
+│   │   ├── dashboard_screen.dart # Ultra-luxury financial dashboard
+│   │   ├── ai_coach/             # Conversational financial coach & portfolio insights
+│   │   ├── ai_budget/            # AI Monthly Budget Planner & interactive allocator
+│   │   ├── transactions/         # Transaction ledger & recurring sheet
+│   │   ├── analytics/            # Spending breakdown & interactive fl_chart graphs
+│   │   └── ...                   # Categories, Debts, Budgets, Accounts, Limits, Settings
+│   ├── services/                 # AI REST client, context builder, Firebase remote lock
+│   ├── utils/                    # Centralized luxury theme (theme.dart), constants, crypto utils
+│   └── widgets/                  # Reusable luxury widgets, empty states, budget bars
+├── test/                         # 29 automated unit, widget, and state-machine tests
+└── web/                          # Production Web runner, index.html & manifest
+
+server/                           # Python AI Backend Microservice
+├── server.py                     # High-concurrency ThreadingHTTPServer with CORS & rate-limiting
+├── llm_provider.py               # Gemini 1.5 Flash + Groq LLaMA 3.3 70B failover & rule engine
+├── requirements.txt              # Zero heavy dependencies
+├── .env.example                  # Safe configuration template
+└── run_server.bat                # One-click startup script for Windows
+
+releases/                         # Verified installable binaries
+├── MONEY-v2.0.0-release.apk      # Directly installable Android APK (30.76 MB)
+└── MONEY-v2.0.0-release.aab      # Google Play Store App Bundle (30.46 MB)
+
+docs/                             # In-depth technical documentation for Jury review
+├── TECH_STACK_AND_ARCHITECTURE.md
+├── FEATURES_AND_DATA_FLOW.md
+├── DEVELOPMENT_AND_RELEASE.md
+└── JURY_PREPARATION.md
+```
+
+---
+
+## 7. Prerequisites
+
+- **Flutter SDK**: `3.24.5` (Channel stable)
+- **Dart SDK**: `3.5.4`
+- **Python**: `3.10+`
+- **Android SDK**: `API Level 34+` (JDK 17)
+- **Google Chrome**: For running the web application
+
+---
+
+## 8. Installation
+
+### 1. Clone & Set Up Flutter Client
+```bash
+git clone https://github.com/thekrishnasarathe/My-Money.git
+cd My-Money/My-Money
+flutter pub get
+```
+
+### 2. Set Up Python AI Backend
+```bash
+cd ../server
+pip install -r requirements.txt
+```
+
+---
+
+## 9. Environment Configuration
+
+Copy the example environment file inside `server/`:
+```bash
+cp server/.env.example server/.env
+```
+
+Edit `server/.env` with your preferred AI provider keys:
+```env
+AI_PROVIDER=gemini
+GEMINI_API_KEY=your_gemini_api_key_here
+GROQ_API_KEY=your_groq_api_key_here
+GEMINI_MODEL=gemini-1.5-flash
+GROQ_MODEL=llama-3.3-70b-versatile
+PORT=8000
+HOST=0.0.0.0
+```
+
+> **Zero-Key Resilient Fallback**: If external API keys are omitted, the server automatically switches to its internal deterministic heuristic engine—no crash or empty responses will ever be served.
+
+---
+
+## 10. Running Locally
+
+### Step 1: Start the AI Backend
+```bash
+cd server
+python server.py
+# Server starts on http://localhost:8000
+```
+
+### Step 2: Launch the Frontend
+
+#### Running on Web (Google Chrome):
+```bash
+cd My-Money
+flutter run -d chrome
+```
+
+#### Running on Android:
+```bash
+cd My-Money
+flutter run -d android
+```
+
+---
+
+## 11. Production Builds & Distribution Deliverables
+
+### A. Android Release APK (Directly Installable)
+```bash
+cd My-Money
+flutter build apk --release
+```
+- **Generated File**: `My-Money/build/app/outputs/flutter-apk/app-release.apk`
+- **Release Location**: [`releases/MONEY-v2.0.0-release.apk`](file:///c:/Users/krish/Desktop/My-Money/releases/MONEY-v2.0.0-release.apk)
+- **File Size**: `32,257,619 bytes` (30.76 MB)
+- **SHA-256 Checksum**: `9BB5589AF04C053B9BCBD6625D09A383C662F853AADE23CC9AAE0BA4699E2AED`
+
+### B. Android App Bundle (Google Play Distribution)
+```bash
+cd My-Money
+flutter build appbundle --release
+```
+- **Generated File**: `My-Money/build/app/outputs/bundle/release/app-release.aab`
+- **Release Location**: [`releases/MONEY-v2.0.0-release.aab`](file:///c:/Users/krish/Desktop/My-Money/releases/MONEY-v2.0.0-release.aab)
+- **File Size**: `31,939,712 bytes` (30.46 MB)
+- **SHA-256 Checksum**: `AB628D64AEEF3D20CC49B7CD9840D46D7C439B666FF0A78BC024AB97FA1A136B`
+
+### C. Web Production Build (Static Bundle)
+```bash
+cd My-Money
+flutter build web --release
+```
+- **Generated Directory**: `My-Money/build/web/`
+- **Serve Locally via Python**:
+  ```bash
+  python -m http.server 8080 --directory My-Money/build/web
+  ```
+
+---
+
+## 12. Verification & Test Suite
+
+The project includes 29 automated tests spanning unit logic, budget math, context builders, and widget rendering:
+
+```bash
+cd My-Money
+flutter test
+```
+
+### Verified Test Matrix:
+- **`ai_budget_planner_test.dart`** (15 tests):
+  - Form validation, negative income checks, shortfall/deficit handling.
+  - Feasibility math normalization: $\sum \text{Allocations} = \text{Income}$.
+  - Dynamic interactive editing, category deduplication, and budget rebalancing.
+  - JSON serialization, SQLite persistence, and multi-user isolation.
+- **`ai_integration_test.dart`** (8 tests):
+  - Gemini & Groq model parsing, failover recovery, offline analytical fallback.
+  - Safe metric extraction in `FinancialContextBuilder`.
+- **`remote_lock_cache_test.dart`** (3 tests):
+  - Offline fail-safe state machine, cached status enforcement, zero-lockout first launch.
+- **`widget_test.dart`** (3 tests):
+  - `DashboardScreen` luxury elements (numerals, cards, empty states, FAB).
+  - `AiCoachScreen` tabs and quick prompt chips.
+  - `HomeScreen` 13-destination scrollable navigation.
+
+```text
+00:06 +29: All tests passed!
+```
+
+---
+
+## 13. Security Architecture
+
+1. **Secret Isolation**: Client builds contain zero API keys. All LLM credentials reside exclusively in server environment variables.
+2. **Salted SHA-256 PIN Protection**: Per-device 32-byte salt generated using `Random.secure()` stored in hardware-backed secure storage.
+3. **Data Privacy**: Transactions remain in local SQLite (`money.db`). No financial records are stored on cloud servers.
+4. **Cloud Remote Lock**: Real-time device lockout telemetry via Cloud Firestore allows users to remotely lock compromised devices.
+
+---
+
+## 14. Known Limitations
+
+- **Currency Denomination**: Native amounts use Indian Rupees (`₹`). Multi-currency conversion is planned.
+- **Direct Banking APIs**: Transactions are currently recorded manually or imported via CSV (Account Aggregator integration planned).
+- **Web Keystore**: On web builds, `flutter_secure_storage` uses Web Cryptography API / IndexedDB; on Android, it uses hardware-backed Keystore.
+
+---
+
+## 15. Hackathon Jury Demonstration Flow
+
+1. **Dashboard & Luxury Presentation**: Show the Champagne Gold dominant balance, Emerald income card, Deep Crimson expense card, and secondary daily burn chips.
+2. **Transaction Addition**: Tap the Champagne Gold FAB to record an expense. Notice the instantaneous recalculation of net balance.
+3. **AI Financial Coach**: Tap "Ask Coach" to demonstrate context-aware financial advice comparing income vs. discretionary spending.
+4. **AI Monthly Budget Planner**: Open the Planner, enter monthly income and fixed commitments, and generate a zero-based budget. Demonstrate real-time rebalancing and apply it to the budget tracker.
+5. **Analytics & Charts**: View the interactive category pie chart and six-month historical trend.
+6. **Codebase & Architecture**: Walk the jury through [`docs/TECH_STACK_AND_ARCHITECTURE.md`](docs/TECH_STACK_AND_ARCHITECTURE.md) and [`docs/JURY_PREPARATION.md`](docs/JURY_PREPARATION.md).
+7. **Deliverable Verification**: Present the verified Android APK (`releases/MONEY-v2.0.0-release.apk`) and running web application.
+
+---
+
+## 16. License & Attribution
+
+- **Product Name**: MONEY / My-Money
+- **Lead Architect & Engineer**: **Krishna Sarathe** ([thekrishnasarathe000@gmail.com](mailto:thekrishnasarathe000@gmail.com))
 - **Copyright**: `© 2026 Krishna Sarathe. All rights reserved.`
-
----
-
-# 🚀 Product Creation Roadmap (0% ➔ 100%)
-
-This document chronicles the complete end-to-end engineering journey of **MONEY**, from initial concept to a production-grade, multi-platform personal finance management system.
-
-```text
-[ 0% ] Requirements & Core Data Architecture
-   │
-[ 20% ] Local Persistence Engine & SQLite Migration Schema (v4)
-   │
-[ 40% ] Reactive State Bus & Modern Dark Glassmorphic Design System
-   │
-[ 60% ] Transaction Engine, Total Balance Toggle & Savings Goal Trackers
-   │
-[ 80% ] Encrypted PIN Hashing (SecureStore), Biometrics & Anonymous Firebase Auth
-   │
-[ 100% ] PDF Statement Export, Fail-Safe Remote Lock & Multi-Platform Distribution
-```
-
----
-
-## 📐 Phase 1: Requirements & Core Data Models (0% ➔ 20%)
-
-### 1. Functional Requirements (FR)
-- **FR-01 Transaction Management**: Add, edit, delete, and list Expense and Income entries with custom amounts, dates, payment methods (Cash, UPI, Credit/Debit Cards, Net Banking), tags, and descriptions.
-- **FR-02 Total & Monthly Balance**: Instant toggle between Monthly Net Balance and All-Time Total Balance across Dashboard and Transactions screens.
-- **FR-03 Budget Tracking**: Set weekly and monthly spending thresholds with visual progress alerts and health status indicators.
-- **FR-04 Savings Goals**: Track long-term financial targets with deadline countdowns, progress bars, and allocation logs.
-- **FR-05 Automated Subscriptions**: Schedule recurring payments (Daily, Weekly, Monthly, Yearly) that automatically debit/credit upon due dates.
-- **FR-06 Data Export & Statements**: Export formatted account ledgers and expense summaries into print-ready PDF files and CSV spreadsheets.
-
-### 2. Non-Functional Requirements (NFR)
-- **NFR-01 Performance**: Local SQLite database queries execute in `<10ms` for seamless 60fps/120fps UI scrolling. Startup non-blocking initialization ensures main screens render immediately without UI thread blocking.
-- **NFR-02 Reliability (Offline-First)**: Complete standalone operation without requiring an active internet connection.
-- **NFR-03 Security**: PIN storage protected via salted SHA-256 hashing with per-device 32-byte random salt, persisted via `flutter_secure_storage` (`EncryptedSharedPreferences` on Android / `Keychain` on iOS). Firebase Anonymous Authentication guarantees authenticated session state (`request.auth.uid`) for cloud remote lock telemetry without user login screens.
-
-### 3. Core Model Definitions (`lib/models/`)
-- **`Expense`**: Encapsulates `id`, `name`, `amount`, `category`, `paymentMethod`, `description`, `tags`, and `date`.
-- **`Income`**: Tracks income source, amount, category, deposit method, and timestamps.
-- **`AppCategory`**: Multi-type category metadata (`Expense` vs `Income`), custom hex colors, icon identifiers, and dynamic icon resolver fallback.
-- **`SavingsGoal`**: Goal tracker with `targetAmount`, `savedAmount`, color coding, and deadline dates.
-- **`RecurringExpense`**: Subscription & recurring bill definition supporting Daily, Weekly, Monthly, and Yearly schedules.
-- **`Account`**: Wallet/Bank balance models supporting balance tracking and multi-account transfers.
-
----
-
-## 💾 Phase 2: Database Schema & Migration Engine (20% ➔ 40%)
-
-### 1. SQLite Database Design (`lib/database/db_helper.dart`)
-Built from scratch using `sqflite` with dynamic versioning and performance composite indexes.
-
-```sql
--- Transactions Tables
-CREATE TABLE expenses (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id TEXT NOT NULL DEFAULT 'default_user',
-  name TEXT NOT NULL,
-  amount REAL NOT NULL,
-  category TEXT NOT NULL,
-  payment_method TEXT DEFAULT "UPI",
-  description TEXT DEFAULT "",
-  tags TEXT DEFAULT "",
-  date INTEGER NOT NULL,
-  created_at INTEGER NOT NULL
-);
-
-CREATE TABLE incomes (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id TEXT NOT NULL DEFAULT 'default_user',
-  source TEXT NOT NULL,
-  amount REAL NOT NULL,
-  category TEXT NOT NULL,
-  payment_method TEXT DEFAULT "Bank",
-  description TEXT DEFAULT "",
-  tags TEXT DEFAULT "",
-  date INTEGER NOT NULL,
-  created_at INTEGER NOT NULL
-);
-
--- Categories & Subscriptions
-CREATE TABLE categories (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id TEXT DEFAULT 'default_user',
-  name TEXT NOT NULL,
-  type TEXT NOT NULL,
-  color TEXT DEFAULT "#1B8A5A",
-  icon TEXT DEFAULT "category",
-  is_default INTEGER DEFAULT 0,
-  created_at INTEGER NOT NULL
-);
-
--- Composite Performance Indexes
-CREATE INDEX idx_exp_user_date ON expenses(user_id, date);
-CREATE INDEX idx_inc_user_date ON incomes(user_id, date);
-```
-
-### 2. Schema Migration & Auto-Seeding (v1 ➔ v4)
-- **v1/v2**: Initial local tables and transaction columns.
-- **v3**: Added structured category management, savings goals, and v2 recurring tables.
-- **v4**: Multi-user data isolation via `user_id` partitioning across all 8 core tables with fallback default category auto-seeding.
-
----
-
-## 🎨 Phase 3: UI Design System & State Management (40% ➔ 60%)
-
-### 1. Modern Dark Glassmorphic Design System (`lib/utils/theme.dart`)
-- **Theme Philosophy**: Sleek dark mode with vibrant emerald green (`#1B8A5A`), crimson red (`#E53935`), and obsidian card layers (`#1E222A` / `#252B36`).
-- **Responsive Layout Engine**: All balance headers and segmented controls utilize `Expanded` constraints with text overflow protection (`TextOverflow.ellipsis`) for 100% responsive rendering across Android screen widths (360dp–450dp+) and high accessibility font scale settings.
-- **Visual Balance Controls**: Segmented toggles feature distinct visual icon indicators:
-  - **This Month / Monthly**: `Icons.calendar_month_outlined`
-  - **Total Balance / All-Time**: `Icons.all_inclusive_rounded`
-
-### 2. Reactive State Management (`lib/providers/app_provider.dart`)
-- **`AppProvider`**: Single source of truth managing expenses, incomes, categories, recurring engine state, all-time vs monthly balances, category icon resolution, and security session locks.
-- **Optimized Caching**: Invalidation caches prevent redundant database queries during frequent UI rebuilds.
-
----
-
-## 🛡️ Phase 4: Security Design, Automation & Threat Model (60% ➔ 80%)
-
-### 1. Security Architecture & Cryptographic Design
-- **PIN Credential Security (`lib/utils/secure_store.dart`)**: User PINs are hashed using SHA-256 with a unique per-device random salt (32 bytes generated via `Random.secure()`). Hashes and salts are stored exclusively in hardware-backed secure storage via `flutter_secure_storage` (`EncryptedSharedPreferences` on Android, `Keychain` on iOS). A one-time migration flow detects legacy plaintext SharedPreferences PIN entries, purges them securely, and prompts the user via a "Security Update" dialog to establish fresh secure PIN credentials.
-- **Biometric Authentication**: Hardware-level fingerprint / FaceID verification integrated via native OS authentication API (`local_auth`).
-- **ADB Backup Disabled**: Android OS backup is strictly disabled (`android:allowBackup="false"` in `AndroidManifest.xml`) to prevent physical extraction of app data via ADB commands.
-
-### 2. Anonymous Firebase Auth & Fail-Safe Remote Lock
-- **Silent Anonymous Auth**: App startup automatically invokes `FirebaseAuth.instance.signInAnonymously()` to establish a valid `request.auth.uid` without any user login UI.
-- **Server-Only Remote Lock Check**: `_performLiveCheck()` executes parallel queries using `GetOptions(source: Source.server)` to verify device block status against Firebase Firestore project `money-46719`.
-- **Fail-Safe Offline Persistence**: If the device is offline or the server check times out (bounded by 3s auth and 6s check limits), `FirebaseService` catches the exception and falls back to `SharedPreferences` cached status (`kLastKnownBlocked`), ensuring a remotely locked device remains locked offline with an amber status banner.
-- **`kDebugMode` Telemetry Guard**: All remote lock telemetry and auth debug logs are wrapped with `if (kDebugMode)` to maintain silent production release builds while preserving diagnostic tracing in debug builds.
-
-### 3. Threat Model & Mitigation Strategy (OWASP Mobile)
-| Threat Vector | Risk Level | Mitigation Strategy |
-| :--- | :---: | :--- |
-| **Data at Rest Theft** | Medium | Local database protected behind OS sandbox; PIN stored in `EncryptedSharedPreferences` as salted SHA-256 hash. |
-| **ADB Backup Extraction** | High | `android:allowBackup="false"` enforced in AndroidManifest.xml. |
-| **PIN Brute Force** | High | Multi-attempt exponential delay backoff + optional biometric lockout. |
-| **Unauthorized Cloud Access** | High | Firestore security rules enforce strict authentication (`request.auth != null`) and ownership checks (`ownerUid == request.auth.uid`). |
-| **Transport Interception** | Medium | All cloud synchronization enforced over TLS 1.3 encrypted HTTPS standard. |
-
-### 4. Firestore Security Rules (`firestore.rules`)
-
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // User-isolated collection rules
-    match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-
-    // Remote device status telemetry rules
-    match /money_devices/{deviceId} {
-      // New docs: ownerUid must match authenticated user
-      allow create: if request.auth != null
-        && request.resource.data.ownerUid == request.auth.uid;
-      // Read access: allow authenticated user if ownerUid matches or during transition backfill
-      allow read: if request.auth != null
-        && (!('ownerUid' in resource.data) || resource.data.get('ownerUid', '') == '' || resource.data.ownerUid == request.auth.uid);
-      // Write access: restricted to matching ownerUid
-      allow write: if request.auth != null
-        && resource.data.get('ownerUid', null) == request.auth.uid;
-      // Transition: allow backfill write on docs missing or empty ownerUid
-      allow update: if request.auth != null
-        && (!('ownerUid' in resource.data) || resource.data.get('ownerUid', '') == '')
-        && request.resource.data.ownerUid == request.auth.uid;
-    }
-
-    // Global app settings (read-only for authenticated devices)
-    match /money_app/{document=**} {
-      allow read: if request.auth != null;
-      allow write: if false; // app-side should never write global settings
-    }
-  }
-}
-```
-
-### 5. Automated Recurring Engine & PDF Export Engine
-- **Recurring Bills**: Evaluates due items on application launch and automatically posts periodic debits/credits.
-- **PDF Statement Engine**: Vector-rendered formal financial ledger export built using `pdf` and `printing`.
-
----
-
-## ☁️ Phase 5: Cloud Remote Telemetry & Build Distribution (80% ➔ 100%)
-
-### 1. Backup, Recovery & Remote Telemetry
-- **Local Data Backup**: Export/Import JSON database backups from Settings. (Planned — backup encryption via AES-256-GCM planned for v2.1.)
-- **Remote Telemetry**: Telemetry state monitored via Firebase Firestore (`money-46719`).
-
-### 2. Platform Support & Validation Status
-- **Android (Validated)**: Fully tested on Android 12 through Android 15 (API 31–35) hardware.
-- **Web App (Validated)**: Tested and running locally via HTTP server (`Launch-MONEY-Laptop.bat`) on Chrome/Edge.
-- **Desktop (Targeted)**: Supported via standard Flutter C++ runner architecture.
-
----
-
-## 📁 Repository Directory Structure
-
-```text
-My-Paisa/
-├── My-Money/                           # Core Flutter Source Code
-│   ├── android/                        # Android Native Kotlin & Gradle Setup
-│   ├── ios/                            # iOS Platform Configuration
-│   ├── lib/                            # Application Source Code
-│   │   ├── database/                   # SQLite (SQFlite) Helper & Migration Schema (v4)
-│   │   ├── models/                     # Data Schemas (Expense, Income, AppCategory, Account)
-│   │   ├── providers/                  # Application State & Reactive Bus (AppProvider)
-│   │   ├── repositories/               # Repository Abstraction Layer
-│   │   ├── screens/                    # UI Screen Views & Modal Sheets
-│   │   ├── services/                   # Firebase Remote Telemetry & Anonymous Auth Services
-│   │   ├── utils/                      # Theme, SecureStore, SecurityUtils & PDF Engine
-│   │   └── main.dart                   # Application Entrypoint
-│   ├── web/                            # Web Platform Files & PWA Manifest
-│   ├── windows/                        # Windows Native C++ Runner
-│   ├── firestore.rules                 # Deployed Authenticated Firestore Security Rules
-│   └── pubspec.yaml                    # Flutter Project Dependencies (v1.1.0+2)
-├── releases/                           # Empirically Verified Production Binaries
-│   ├── MONEY-v1.1.0-release.apk        # Production Release Android APK
-│   └── MONEY-v1.1.0-release.aab        # Production Android App Bundle
-├── Launch-MONEY-Laptop.bat             # 1-Click Laptop Web App Server Launcher
-└── README.md                           # Technical Architecture Blueprint
-```
-
----
-
-## 🧪 Testing & CI/CD Strategy
-
-### 1. Automated Testing Suite
-- **Unit Tests**: Business logic and database repository functions (`test/widget_test.dart`).
-- **Widget Tests**: UI screen layout, toggle state switches, and modal bottom sheet interactions.
-
-### 2. Release Checklist
-- [x] Execute `flutter test` to verify clean test execution.
-- [x] Run `flutter analyze` to ensure 0 lints and 0 compilation warnings.
-- [x] Verify multi-user isolation queries (`user_id = ? OR is_default = 1`).
-- [x] Verify SecureStore hardware PIN migration and anonymous Firebase authentication.
-- [x] Compile release targets (`apk`, `appbundle`).
-- [x] Calculate and document empirical SHA-256 checksums.
-
----
-
-## 🔒 Empirically Verified Build Checksums (v1.1.0+2)
-
-*The following binary outputs were built, verified, and hashed locally on the build system:*
-
-| Output Target | Binary Name | Size | Verified SHA-256 Checksum |
-| :--- | :--- | :---: | :--- |
-| **Android APK** | `MONEY-v1.1.0-release.apk` | **31.4 MB** | `4965EB13B354C1CB03874D9668B115D56A25AF91B65E27AD3FD6724B81BDE5C4` |
-| **Android App Bundle** | `MONEY-v1.1.0-release.aab` | **31.1 MB** | `150300068C24E0070FEF627B4171ADD06AB912B2A04A8E97973FC1E864997E57` |
-
----
-
-## 📄 License & Intellectual Property
-
-Designed, engineered, and maintained by **Krishna Sarathe**.
-
-```text
-Copyright © 2026 Krishna Sarathe. All rights reserved.
-
-This software product and its associated documentation files are proprietary.
-Unauthorized copying, redistribution, or commercial exploitation is strictly prohibited.
-```
+- **License**: MIT License. See [LICENSE](LICENSE) for details.

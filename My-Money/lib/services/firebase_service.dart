@@ -39,6 +39,7 @@ class FirebaseService {
   String _blockReason = '';
   String _deviceId = '';
 
+  bool get isConfigured => _isConfigured;
   bool get isBlocked => _isBlocked;
   String get blockReason => _blockReason;
   String get deviceId => _deviceId;
@@ -61,19 +62,6 @@ class FirebaseService {
     final prefs = await SharedPreferences.getInstance();
     String? id = prefs.getString(AppConstants.kDeviceId);
     if (id != null && id.isNotEmpty) return id;
-
-    // Generate new ID
-    final deviceInfo = DeviceInfoPlugin();
-    String deviceName = 'Unknown';
-    String deviceModel = 'Unknown';
-
-    try {
-      if (Platform.isAndroid) {
-        final info = await deviceInfo.androidInfo;
-        deviceName = info.device;
-        deviceModel = '${info.brand} ${info.model}';
-      }
-    } catch (_) {}
 
     id = const Uuid().v4();
     await prefs.setString(AppConstants.kDeviceId, id);
