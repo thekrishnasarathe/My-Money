@@ -100,11 +100,15 @@ class _ScrollableNav extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.cardDark,
-        border: const Border(top: BorderSide(color: AppTheme.divider, width: 0.5)),
-        boxShadow: [BoxShadow(
-          color: Colors.black.withOpacity(0.3),
-          blurRadius: 12, offset: const Offset(0,-2))],
+        color: AppTheme.jetBlack,
+        border: const Border(top: BorderSide(color: AppTheme.forestGreen, width: 1.0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.5),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
       ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -113,9 +117,11 @@ class _ScrollableNav extends StatelessWidget {
           children: items.asMap().entries.map((e) {
             final i = e.key; final item = e.value;
             final active = i == selectedIndex;
-            final color = active ? AppTheme.primary : AppTheme.textSecondary;
+            final iconColor = active ? AppTheme.champagneGold : const Color(0xFF75746C);
+            final textColor = active ? AppTheme.paleChampagne : const Color(0xFF8A887E);
             return GestureDetector(
               onTap: () => onTap(i),
+              behavior: HitTestBehavior.opaque,
               child: Container(
                 width: itemWidth,
                 padding: EdgeInsets.only(top: 10, bottom: 10 + bottomPad),
@@ -124,22 +130,29 @@ class _ScrollableNav extends StatelessWidget {
                     duration: const Duration(milliseconds: 200),
                     child: Icon(active ? item.activeIcon : item.icon,
                       key: ValueKey(active),
-                      color: color, size: 22)),
+                      color: iconColor, size: 22)),
                   const SizedBox(height: 4),
                   AnimatedDefaultTextStyle(
                     duration: const Duration(milliseconds: 200),
-                    style: TextStyle(color: color, fontSize: 10,
-                      fontWeight: active ? FontWeight.w600 : FontWeight.normal),
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 10,
+                      fontWeight: active ? FontWeight.bold : FontWeight.normal,
+                      letterSpacing: active ? 0.2 : 0,
+                    ),
                     child: Text(item.label,
                       maxLines: 1, overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center)),
                   const SizedBox(height: 3),
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    width: active ? 20 : 0, height: 3,
+                    width: active ? 22 : 0,
+                    height: 2.5,
                     decoration: BoxDecoration(
-                      color: active ? AppTheme.primary : Colors.transparent,
-                      borderRadius: BorderRadius.circular(2))),
+                      color: active ? AppTheme.champagneGold : Colors.transparent,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
                 ]),
               ),
             );
@@ -156,12 +169,19 @@ class _SettingsHub extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: AppTheme.jetBlack,
       body: SafeArea(child: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Settings', style: TextStyle(fontSize: 24,
-            fontWeight: FontWeight.bold)),
+          const Text(
+            'Settings',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.champagneGold,
+              letterSpacing: 0.5,
+            ),
+          ),
           const SizedBox(height: 20),
           _S('PREFERENCES', [
             _I(context, Icons.palette_outlined, 'Theme & Notifications',
@@ -188,24 +208,31 @@ class _SettingsHub extends StatelessWidget {
 
 Widget _S(String title, List<Widget> items) => Column(
   crossAxisAlignment: CrossAxisAlignment.start, children: [
-  Text(title, style: const TextStyle(color: AppTheme.textSecondary,
-    fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
+  Text(title, style: const TextStyle(color: AppTheme.paleChampagne,
+    fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.0)),
   const SizedBox(height: 8),
-  Container(decoration: BoxDecoration(color: AppTheme.cardDark,
-    borderRadius: BorderRadius.circular(14)),
-  child: Column(children: items)),
+  Container(
+    decoration: BoxDecoration(
+      color: AppTheme.charcoalGrey,
+      borderRadius: BorderRadius.circular(14),
+      border: Border.all(color: AppTheme.forestGreen, width: 0.75),
+    ),
+    child: Column(children: items)),
 ]);
 
 Widget _I(BuildContext ctx, IconData icon, String title, String sub, Widget dest) =>
   ListTile(
     leading: Container(width: 38, height: 38,
-      decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(10)),
-      child: Icon(icon, color: AppTheme.primary, size: 20)),
+      decoration: BoxDecoration(
+        color: AppTheme.champagneGold.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppTheme.antiqueGold, width: 0.5),
+      ),
+      child: Icon(icon, color: AppTheme.champagneGold, size: 20)),
     title: Text(title, style: const TextStyle(fontSize: 14,
-      fontWeight: FontWeight.w500)),
+      fontWeight: FontWeight.w500, color: Colors.white)),
     subtitle: Text(sub, style: const TextStyle(
       color: AppTheme.textSecondary, fontSize: 11)),
     trailing: const Icon(Icons.chevron_right,
-      color: AppTheme.textSecondary, size: 18),
+      color: AppTheme.champagneGold, size: 18),
     onTap: () => Navigator.push(ctx, MaterialPageRoute(builder: (_) => dest)));

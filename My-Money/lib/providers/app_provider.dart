@@ -284,17 +284,21 @@ class AppProvider extends ChangeNotifier {
   }
 
   Future<void> _loadAllData() async {
-    _expenses = await _repo.getExpenses();
-    _incomes = await _repo.getIncomes();
-    _pendingDebts = await _repo.getPendingDebts();
-    _paidDebts = await _repo.getPaidDebts();
-    _accounts = await _repo.getAccounts();
-    _budgets = await _repo.getBudgetsByMonth(_selectedMonth, _selectedYear);
-    _recurring = await _repo.getRecurring();
-    _goals = await _repo.getGoals();
-    _categories = await _repo.getCategories();
-    _activeBudgetPlan = await _repo.getLatestAiBudgetPlan();
-    _savedBudgetPlans = await _repo.getAiBudgetPlans();
+    try {
+      _expenses = await _repo.getExpenses();
+      _incomes = await _repo.getIncomes();
+      _pendingDebts = await _repo.getPendingDebts();
+      _paidDebts = await _repo.getPaidDebts();
+      _accounts = await _repo.getAccounts();
+      _budgets = await _repo.getBudgetsByMonth(_selectedMonth, _selectedYear);
+      _recurring = await _repo.getRecurring();
+      _goals = await _repo.getGoals();
+      _categories = await _repo.getCategories();
+      _activeBudgetPlan = await _repo.getLatestAiBudgetPlan();
+      _savedBudgetPlans = await _repo.getAiBudgetPlans();
+    } catch (e) {
+      debugPrint('AppProvider._loadAllData notice: $e');
+    }
     _invalidateCaches();
     notifyListeners();
   }

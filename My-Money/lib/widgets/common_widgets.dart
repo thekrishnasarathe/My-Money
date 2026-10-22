@@ -60,15 +60,19 @@ class StatTile extends StatelessWidget {
 class SectionCard extends StatelessWidget {
   final Widget child;
   final EdgeInsets? padding;
-  const SectionCard({super.key, required this.child, this.padding});
+  final Border? border;
+  const SectionCard({super.key, required this.child, this.padding, this.border});
 
   @override
   Widget build(BuildContext context) {
     final bg = Theme.of(context).cardTheme.color ?? AppTheme.cardDark;
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(color: bg,
-        borderRadius: BorderRadius.circular(16)),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(16),
+        border: border ?? Border.all(color: AppTheme.borderForest, width: 0.75),
+      ),
       padding: padding ?? const EdgeInsets.all(16),
       child: child,
     );
@@ -105,12 +109,12 @@ class BudgetBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = pct >= 100 ? AppTheme.expenseRed
-      : pct >= 80 ? Colors.orange : AppTheme.primary;
+      : pct >= 80 ? const Color(0xFFFFB547) : AppTheme.primary;
     return ClipRRect(
       borderRadius: BorderRadius.circular(4),
       child: LinearProgressIndicator(
         value: (pct / 100).clamp(0, 1),
-        backgroundColor: AppTheme.divider,
+        backgroundColor: AppTheme.forestGreen,
         valueColor: AlwaysStoppedAnimation(color),
         minHeight: 6,
       ),
@@ -129,12 +133,27 @@ class MonthNavigator extends StatelessWidget {
   Widget build(BuildContext context) {
     final d = DateTime(year, month);
     return Row(mainAxisSize: MainAxisSize.min, children: [
-      IconButton(onPressed: onPrev, icon: const Icon(Icons.chevron_left),
-        padding: EdgeInsets.zero, constraints: const BoxConstraints()),
-      Text(DateFormat('MMMM yyyy').format(d),
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-      IconButton(onPressed: onNext, icon: const Icon(Icons.chevron_right),
-        padding: EdgeInsets.zero, constraints: const BoxConstraints()),
+      IconButton(
+        onPressed: onPrev,
+        icon: const Icon(Icons.chevron_left, color: AppTheme.champagneGold, size: 20),
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+      ),
+      Text(
+        DateFormat('MMMM yyyy').format(d),
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+          color: AppTheme.paleChampagne,
+          letterSpacing: 0.3,
+        ),
+      ),
+      IconButton(
+        onPressed: onNext,
+        icon: const Icon(Icons.chevron_right, color: AppTheme.champagneGold, size: 20),
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+      ),
     ]);
   }
 }
@@ -143,23 +162,65 @@ class MonthNavigator extends StatelessWidget {
 class EmptyState extends StatelessWidget {
   final IconData icon;
   final String title, subtitle;
-  const EmptyState({super.key, required this.icon,
-    required this.title, this.subtitle = ''});
+  final Widget? action;
+  final Color? iconColor;
+  const EmptyState({
+    super.key,
+    required this.icon,
+    required this.title,
+    this.subtitle = '',
+    this.action,
+    this.iconColor,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-      Icon(icon, size: 64, color: AppTheme.textSecondary),
-      const SizedBox(height: 16),
-      Text(title, style: const TextStyle(fontSize: 16,
-        fontWeight: FontWeight.w600)),
-      if (subtitle.isNotEmpty) ...[
-        const SizedBox(height: 6),
-        Text(subtitle, style: const TextStyle(
-          color: AppTheme.textSecondary, fontSize: 13),
-          textAlign: TextAlign.center),
-      ],
-    ]));
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppTheme.charcoalGrey,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppTheme.antiqueGold, width: 1),
+              ),
+              child: Icon(icon, size: 44, color: iconColor ?? AppTheme.champagneGold),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.paleChampagne,
+                letterSpacing: 0.3,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            if (subtitle.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontSize: 13,
+                  height: 1.4,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+            if (action != null) ...[
+              const SizedBox(height: 16),
+              action!,
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }
 
