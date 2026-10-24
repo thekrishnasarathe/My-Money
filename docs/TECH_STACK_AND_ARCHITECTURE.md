@@ -62,24 +62,24 @@ flowchart TD
     end
 
     %% Client Interactions
-    UI -->|User Events & Mutations| Provider
-    Provider -->|Queries & Updates| Repo
-    Repo -->|Direct SQL Execution| DB
-    UI -.->|PIN Verification| SecStore
-    Provider -->|Extracts Analytics| AICoachService
+    UI -->|"User Events & Mutations"| Provider
+    Provider -->|"Queries & Updates"| Repo
+    Repo -->|"Direct SQL Execution"| DB
+    UI -.->|"PIN Verification"| SecStore
+    Provider -->|"Extracts Analytics"| AICoachService
 
     %% AI Communication
-    AICoachService -->|POST /api/ai/chat\nPOST /api/ai/budget-planner| Server
+    AICoachService -->|"POST /api/ai/chat"| Server
     Server --> LLM
-    LLM -->|HTTPS JSON Request| GeminiAPI
-    LLM -->|HTTPS JSON Request (Failover)| GroqAPI
+    LLM -->|"HTTPS JSON Request"| GeminiAPI
+    LLM -->|"HTTPS JSON Request (Failover)"| GroqAPI
 
     %% Fallback
-    LLM -.->|If APIs Exhausted| LLM
-    AICoachService -.->|If Backend Offline| Provider
+    LLM -.->|"If APIs Exhausted"| LLM
+    AICoachService -.->|"If Backend Offline"| Provider
 
     %% Remote Lock
-    UI -.->|Device Status Check| Firestore
+    UI -.->|"Device Status Check"| Firestore
 ```
 
 ---

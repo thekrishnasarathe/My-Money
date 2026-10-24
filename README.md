@@ -103,12 +103,12 @@ flowchart TD
     Repo --> SQLite
     UI -.-> SecureStore
     State --> ContextBuilder
-    ContextBuilder -->|HTTPS REST| Server
+    ContextBuilder -->|"HTTPS REST"| Server
     Server --> LLMProvider
-    LLMProvider -->|Primary| Gemini
-    LLMProvider -->|Failover (HTTP 429/500)| Groq
-    LLMProvider -.->|Offline Fallback| Heuristic
-    UI -.->|Telemetry Status| Firebase
+    LLMProvider -->|"Primary"| Gemini
+    LLMProvider -->|"Failover (HTTP 429/500)"| Groq
+    LLMProvider -.->|"Offline Fallback"| Heuristic
+    UI -.->|"Telemetry Status"| Firebase
 ```
 
 ---
