@@ -1,46 +1,441 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="$FLUTTER_BASE_HREF">
-
   <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
-
-  <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="My-Money">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
-
-  <title>My-Money - Personal Finance Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>MONEY — 3D Cyber-Luxury FinTech & AI Personal Coach</title>
+  <meta name="description" content="3D Personal Finance Application with Jet Black (#0A0A0A), Cerulean Blue (#007BA7), Neon Rose (#FF2D95), user authentication, zero-data initialization, and deterministic math ledgers.">
+  <link rel="icon" type="image/png" href="favicon.png">
   <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="app.css">
+  <!-- Chart.js for 3D Cyber Financial Charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <script src="app.js" defer></script>
 </head>
 <body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
 
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
-  <script src="flutter_bootstrap.js" async></script>
+  <!-- ── 3D Ambient Holographic Space Scene ── -->
+  <div class="ambient-scene">
+    <div class="orb-cerulean"></div>
+    <div class="orb-rose"></div>
+    <div class="grid-floor-3d"></div>
+  </div>
+
+  <!-- ── Top Cyber-Luxury Navigation Bar ── -->
+  <nav class="navbar">
+    <div class="brand" onclick="app.switchView('dashboard')">
+      <div class="brand-cube-3d">M</div>
+      <div class="brand-text">
+        <h1>MONEY</h1>
+        <div class="brand-sub">Private Client FinTech</div>
+      </div>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="nav-tab active" data-view="dashboard">📊 Dashboard</button>
+      <button class="nav-tab" data-view="transactions">💳 Transactions</button>
+      <button class="nav-tab" data-view="analytics">📈 3D Analytics</button>
+      <button class="nav-tab" data-view="aicoach">🤖 AI Coach</button>
+      <button class="nav-tab" data-view="budget">⚖️ 50/30/20 Plan</button>
+      <button class="nav-tab" data-view="accounts">🏦 Vaults & Debts</button>
+      <button class="nav-tab" data-view="export">📑 Export</button>
+    </div>
+
+    <div class="nav-actions">
+      <!-- User Profile Badge -->
+      <div id="nav-user-badge" class="user-badge-3d" style="display:none;">
+        <div id="nav-user-avatar" class="user-avatar-circle">U</div>
+        <span id="nav-user-name" class="user-name-text">User</span>
+        <button id="nav-logout-btn" class="logout-icon-btn" title="Sign out to login as another user">Exit</button>
+      </div>
+
+      <a href="/APP_GUIDE.html" target="_blank" class="logout-icon-btn" style="background:rgba(0,123,167,0.15);border-color:rgba(0,123,167,0.35);color:var(--cerulean-bright);text-decoration:none;">
+        📖 Guide
+      </a>
+    </div>
+  </nav>
+
+  <!-- ── Main App Shell ── -->
+  <main class="app-container">
+
+    <!-- ════════ VIEW 1: DASHBOARD ════════ -->
+    <div id="view-dashboard" class="view-section active">
+      <!-- 3D Hero Balance Card -->
+      <div class="hero-card card-3d">
+        <div class="hero-meta layer-depth-1">
+          <div id="hero-balance-label" class="balance-label">
+            <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--cerulean-bright);box-shadow:0 0 10px var(--cerulean-bright);"></span>
+            MONTHLY NET CASH FLOW
+          </div>
+          <button id="balance-toggle-btn" class="balance-toggle-btn">Switch to Net Worth</button>
+        </div>
+
+        <div class="hero-amount-row layer-depth-2">
+          <span class="currency-symbol">₹</span>
+          <span id="hero-amount" class="hero-amount">--</span>
+        </div>
+
+        <div class="burn-indicators-grid layer-depth-1">
+          <div class="burn-item">
+            <span class="burn-title">Savings Rate</span>
+            <span id="metric-savings-rate" class="burn-val cerulean">--%</span>
+          </div>
+          <div class="burn-item">
+            <span class="burn-title">Daily Burn Rate</span>
+            <span id="metric-burn-rate" class="burn-val rose">₹--/day</span>
+          </div>
+          <div class="burn-item">
+            <span class="burn-title">Month Transactions</span>
+            <span id="metric-tx-count" class="burn-val">-- Records</span>
+          </div>
+          <div class="burn-item">
+            <span class="burn-title">Personal Vault</span>
+            <span class="burn-val cerulean" style="font-size:0.95rem;">🔒 Isolated & Encrypted</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Split Dual Inflow & Outflow Cards -->
+      <div class="inflow-outflow-grid">
+        <div class="flow-card card-3d income">
+          <div class="flow-header layer-depth-1">
+            <span class="flow-type">↗ Verified Inflow</span>
+            <span style="font-size:1.1rem;color:var(--cerulean-bright);">●</span>
+          </div>
+          <div id="card-income-total" class="flow-amount layer-depth-2">₹0</div>
+          <div class="flow-caption layer-depth-1">Salary, Retainers, Dividends & Cashbacks</div>
+        </div>
+
+        <div class="flow-card card-3d expense">
+          <div class="flow-header layer-depth-1">
+            <span class="flow-type">↘ Monitored Outflow</span>
+            <span style="font-size:1.1rem;color:var(--neon-rose-bright);">●</span>
+          </div>
+          <div id="card-expense-total" class="flow-amount layer-depth-2">₹0</div>
+          <div class="flow-caption layer-depth-1">Fixed Commitments, Lifestyle & Discretionary Burn</div>
+        </div>
+      </div>
+
+      <!-- 3D AI Spotlight Panel -->
+      <div class="ai-spotlight-card card-3d">
+        <div class="ai-badge layer-depth-1">✦ 3D NEURAL ADVISOR • GEMINI 1.5 FLASH + GROQ HYBRID</div>
+        <h3 class="ai-title layer-depth-2">AI Financial Intelligence Engine</h3>
+        <p class="ai-desc layer-depth-1">Deterministic arithmetic is calculated instantly on your personal ledger. Tap an analytical chip or consult the neural coach for discretionary leak identification and monthly cash flow runways.</p>
+        
+        <div class="ai-quick-prompts layer-depth-1">
+          <button class="ai-chip" data-prompt="Analyze discretionary leaks in my expenses">🔍 Analyze discretionary leaks</button>
+          <button class="ai-chip" data-prompt="Predict my end-of-month balance and burn runway">⏱ Predict end-of-month balance</button>
+          <button class="ai-chip" data-prompt="Perform a 50/30/20 budget feasibility check">⚖️ 50/30/20 feasibility check</button>
+          <button class="ai-chip" data-prompt="Summarize my top capital outflow category">📊 Top capital outflow</button>
+        </div>
+
+        <div id="ai-coach-output" class="ai-box layer-depth-1">
+          Select a prompt above or ask a custom question to activate real-time 3D advisory intelligence.
+        </div>
+        <div style="margin-top:1rem;display:flex;justify-content:flex-end;">
+          <button class="balance-toggle-btn" onclick="app.switchView('aicoach')">
+            💬 Open Full Conversational AI Console →
+          </button>
+        </div>
+      </div>
+
+      <!-- Recent Transactions Section -->
+      <div class="section-card card-3d">
+        <div class="section-title-row">
+          <div class="section-heading">
+            <span>Recent Personal Ledger Records</span>
+          </div>
+          <button class="tx-filter-btn active" onclick="app.switchView('transactions')">View All Records →</button>
+        </div>
+        <div id="recent-transactions-container" class="tx-list"></div>
+      </div>
+    </div>
+
+    <!-- ════════ VIEW 2: TRANSACTIONS ════════ -->
+    <div id="view-transactions" class="view-section">
+      <div class="section-card card-3d">
+        <div class="section-title-row">
+          <div class="section-heading">
+            <span>Verified Transaction Ledger</span>
+          </div>
+          <div class="tx-filters">
+            <button class="tx-filter-btn active" data-filter="all">All</button>
+            <button class="tx-filter-btn" data-filter="income">Inflow Only (Cerulean)</button>
+            <button class="tx-filter-btn" data-filter="expense">Outflow Only (Neon Rose)</button>
+          </div>
+        </div>
+        <div id="transactions-container" class="tx-list"></div>
+      </div>
+    </div>
+
+    <!-- ════════ VIEW 3: ANALYTICS ════════ -->
+    <div id="view-analytics" class="view-section">
+      <div class="analytics-grid">
+        <div class="section-card card-3d">
+          <div class="section-heading" style="margin-bottom:1.4rem;">
+            <span>Category Outflow Concentration</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="chart-category"></canvas>
+          </div>
+        </div>
+
+        <div class="section-card card-3d">
+          <div class="section-heading" style="margin-bottom:1.4rem;">
+            <span>Historical Inflow vs Outflow Comparison</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="chart-trends"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ VIEW 4: AI COACH ════════ -->
+    <div id="view-aicoach" class="view-section">
+      <div class="section-card card-3d">
+        <div class="ai-console-header">
+          <div class="section-heading">
+            <span>🤖 3D AI Financial Coach Console</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;">
+            <span id="ai-provider-badge" class="ai-provider-pill">
+              <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--cerulean-bright);box-shadow:0 0 8px var(--cerulean-bright);"></span>
+              Math-Verified Heuristic Core
+            </span>
+            <button id="btn-ai-key-settings" class="logout-icon-btn" style="background:rgba(0,123,167,0.15);border-color:rgba(0,123,167,0.35);color:var(--cerulean-bright);" onclick="app.openApiKeyModal()">
+              ⚙️ Cloud API Key
+            </button>
+            <button id="btn-clear-chat" class="logout-icon-btn" onclick="app.clearChatHistory()" title="Clear conversation history">Clear Chat</button>
+          </div>
+        </div>
+
+        <!-- Quick Consultation Prompts -->
+        <div class="ai-quick-prompts" style="margin-bottom:1rem;">
+          <button class="ai-chip" data-prompt="Analyze discretionary leaks in my expenses">🔍 Discretionary leaks</button>
+          <button class="ai-chip" data-prompt="Predict my end-of-month balance and burn runway">⏱ Predict month-end runway</button>
+          <button class="ai-chip" data-prompt="Perform a 50/30/20 budget feasibility check">⚖️ 50/30/20 feasibility check</button>
+          <button class="ai-chip" data-prompt="Review my debt obligations and payoff priority">🛡️ Debt payoff strategy</button>
+          <button class="ai-chip" data-prompt="How can I cut expenses and increase my savings rate?">💡 Boost savings rate</button>
+          <button class="ai-chip" data-prompt="Summarize my top capital outflow category">📊 Top outflow category</button>
+        </div>
+
+        <!-- Chat Stream Window -->
+        <div id="ai-chat-stream" class="ai-chat-stream">
+          <!-- Populated dynamically by app.js -->
+        </div>
+
+        <!-- Query Input Form -->
+        <form id="ai-query-form" style="display:flex;gap:0.75rem;margin-top:0.5rem;align-items:center;">
+          <input type="text" id="ai-query-input" class="form-input" style="flex:1;" placeholder="Ask your personal AI coach anything (e.g. Can I afford a new laptop? How to save ₹15,000 this month?)" required autocomplete="off">
+          <button type="submit" class="submit-btn" style="width:auto;padding:0.85rem 1.8rem;margin-top:0;white-space:nowrap;">
+            Consult AI ↗
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ════════ VIEW 5: BUDGET PLANNER ════════ -->
+    <div id="view-budget" class="view-section">
+      <div class="section-card card-3d">
+        <div class="section-heading" style="margin-bottom:0.5rem;">
+          <span>50/30/20 Cyber Zero-Based Budget Rebalancer</span>
+        </div>
+        <p style="color:var(--text-secondary);font-size:0.92rem;margin-bottom:1.8rem;">
+          Dynamic allocation sliders automatically calculate target envelopes based on your personal inflow and evaluate actual spending against thresholds.
+        </p>
+        <div id="budget-planner-container" class="budget-grid"></div>
+      </div>
+    </div>
+
+    <!-- ════════ VIEW 6: ACCOUNTS & DEBTS ════════ -->
+    <div id="view-accounts" class="view-section">
+      <div class="section-card card-3d">
+        <div class="section-heading" style="margin-bottom:1.2rem;">
+          <span>Personal Vaults & Accounts</span>
+        </div>
+        <div id="accounts-container" class="account-cards-grid"></div>
+      </div>
+
+      <div class="section-card card-3d">
+        <div class="section-heading" style="margin-bottom:1.2rem;">
+          <span>Debt Obligations Ledger</span>
+        </div>
+        <div id="debts-container" class="tx-list"></div>
+      </div>
+    </div>
+
+    <!-- ════════ VIEW 7: EXPORT ════════ -->
+    <div id="view-export" class="view-section">
+      <div class="section-card card-3d">
+        <div class="section-heading" style="margin-bottom:0.5rem;">
+          <span>Statement & Data Portability</span>
+        </div>
+        <p style="color:var(--text-secondary);font-size:0.95rem;margin-bottom:2rem;">
+          Export your personal verified ledger for external accounting, personal tax preparation, or offline backups.
+        </p>
+        <div style="display:flex;flex-wrap:wrap;gap:1.2rem;">
+          <button class="submit-btn" style="width:auto;padding:0.95rem 1.8rem;" onclick="app.exportData('csv')">
+            📊 Export CSV Spreadsheet
+          </button>
+          <button class="submit-btn" style="width:auto;padding:0.95rem 1.8rem;background:var(--obsidian-surface);color:var(--cerulean-bright);border:1px solid var(--cerulean-blue);" onclick="app.exportData('json')">
+            💾 Export Encrypted JSON Backup
+          </button>
+          <button class="submit-btn" style="width:auto;padding:0.95rem 1.8rem;background:rgba(255,45,149,0.2);color:var(--neon-rose-bright);border:1px solid var(--neon-rose);" onclick="app.exportData('print')">
+            🖨 Print Official Statement
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ── 3D Floating Action Button (FAB) ── -->
+  <button id="fab-add" class="fab" title="Record New Transaction">+</button>
+
+  <!-- ── 3D Transaction Entry Modal ── -->
+  <div id="transaction-modal" class="modal-overlay">
+    <div class="modal-dialog-3d">
+      <div class="modal-header">
+        <div class="modal-title">Record Transaction</div>
+        <button id="modal-close-btn" class="modal-close-btn">&times;</button>
+      </div>
+
+      <div class="type-toggle-row">
+        <button type="button" id="type-btn-expense" class="type-toggle-btn active expense">Outflow (Expense)</button>
+        <button type="button" id="type-btn-income" class="type-toggle-btn">Inflow (Income)</button>
+      </div>
+
+      <form id="add-tx-form">
+        <div class="form-group">
+          <label class="form-label">Transaction Title</label>
+          <input type="text" id="tx-input-title" class="form-input" placeholder="e.g. Salary, Cloud Server, Lunch, Rent" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Amount (₹)</label>
+          <input type="number" id="tx-input-amount" class="form-input" placeholder="0" min="1" step="any" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select id="tx-input-category" class="form-select">
+            <option value="Salary">Salary (Inflow)</option>
+            <option value="Consulting">Consulting / Bonus</option>
+            <option value="Food & Dining">Food & Dining</option>
+            <option value="Rent">Rent & Housing</option>
+            <option value="Utilities">Utilities & Groceries</option>
+            <option value="Transport">Transport & Travel</option>
+            <option value="Shopping">Shopping & Tech</option>
+            <option value="Coffee & Snacks">Coffee & Snacks</option>
+            <option value="Medical">Medical & Wellness</option>
+            <option value="Entertainment">Entertainment</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Target Account Vault</label>
+          <select id="tx-input-account" class="form-select">
+            <!-- Dynamically populated from user accounts -->
+          </select>
+        </div>
+
+        <button type="submit" class="submit-btn">Authorize & Save to Personal Ledger</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ════════ 3D AUTHENTICATION & LOGIN PORTAL MODAL ════════ -->
+  <div id="auth-modal" class="modal-overlay">
+    <div class="modal-dialog-3d" style="max-width:460px;">
+      <div class="auth-hero-header">
+        <div class="auth-hero-badge">M</div>
+        <h2 style="font-family:var(--font-display);font-size:1.6rem;font-weight:800;color:#FFF;margin-bottom:0.35rem;">
+          MONEY 3D Portal
+        </h2>
+        <p style="font-size:0.88rem;color:var(--text-secondary);">
+          Private Client FinTech with Personal Data Isolation
+        </p>
+      </div>
+
+      <div class="auth-switch-tabs">
+        <button id="auth-tab-login" class="auth-tab-btn active">Sign In</button>
+        <button id="auth-tab-register" class="auth-tab-btn">Create Account (New User)</button>
+      </div>
+
+      <!-- Sign In Form -->
+      <form id="form-login">
+        <div class="form-group">
+          <label class="form-label">Username / Client ID</label>
+          <input type="text" id="login-username" class="form-input" placeholder="e.g. krishna" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Access PIN / Password</label>
+          <input type="password" id="login-password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="submit-btn">Unlock Personal Vault →</button>
+      </form>
+
+      <!-- Register Form (ZERO DATA INITIALIZATION) -->
+      <form id="form-register" style="display:none;">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" id="reg-name" class="form-input" placeholder="e.g. Krishna Sarathe" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Choose Username</label>
+          <input type="text" id="reg-username" class="form-input" placeholder="e.g. krishna" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Create Access PIN / Password</label>
+          <input type="password" id="reg-password" class="form-input" placeholder="••••••••" required autocomplete="new-password">
+        </div>
+        <p style="font-size:0.75rem;color:var(--cerulean-bright);margin-bottom:1rem;line-height:1.4;">
+          ✨ <strong>Zero-Data Guarantee:</strong> New profiles start with a fresh ₹0 balance, 0 transactions, and an isolated personal vault.
+        </p>
+        <button type="submit" class="submit-btn" style="background:var(--gradient-brand-reverse);">
+          Create Personal Account (Starts at ₹0)
+        </button>
+      </form>
+
+      <div class="auth-guest-link">
+        <span>Want to preview with sample figures?</span>
+        <a href="#" id="auth-guest-btn">Explore as Guest (Demo Data)</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ AI API KEY CONFIGURATION MODAL ════════ -->
+  <div id="ai-key-modal" class="modal-overlay">
+    <div class="modal-dialog-3d" style="max-width:480px;">
+      <div class="modal-header">
+        <div class="modal-title">AI Engine Settings</div>
+        <button class="modal-close-btn" onclick="document.getElementById('ai-key-modal').classList.remove('open')">&times;</button>
+      </div>
+
+      <p style="font-size:0.88rem;color:var(--text-secondary);line-height:1.6;margin-bottom:1.25rem;">
+        MONEY features an on-device <strong>Deterministic Heuristic Math Core</strong> that answers queries 100% offline. You can also connect your own <strong>Google Gemini API Key</strong> for cloud LLM reasoning.
+      </p>
+
+      <form id="form-ai-key">
+        <div class="form-group">
+          <label class="form-label">Google Gemini API Key (Optional)</label>
+          <input type="password" id="input-gemini-key" class="form-input" placeholder="AIzaSy..." autocomplete="off">
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.4rem;">
+            Get a free key from <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--cerulean-bright);">Google AI Studio</a>. Leave empty to use the built-in Math Core.
+          </div>
+        </div>
+
+        <div style="display:flex;gap:0.8rem;margin-top:1.5rem;">
+          <button type="submit" class="submit-btn" style="flex:1;margin-top:0;">Save Settings</button>
+          <button type="button" class="submit-btn" style="width:auto;background:transparent;border:1px solid rgba(255,45,149,0.3);color:var(--neon-rose-bright);margin-top:0;" onclick="app.removeApiKey()">Remove Key</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
 </body>
 </html>
