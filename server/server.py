@@ -82,14 +82,33 @@ class AIServerHandler(BaseHTTPRequestHandler):
 
         # Route endpoints
         try:
-            if path == "/api/ai/chat":
-                message = body.get("message", "").strip()
+            if path == "/api/ai/chat" or path == "/api/coach":
+                message = body.get("message") or body.get("question") or ""
+                message = str(message).strip()
                 if not message:
-                    self._send_json_response(400, {"error": "Field 'message' cannot be empty"})
-                    return
+                    message = "Provide a comprehensive financial summary and actionable guidance."
+                
                 context = body.get("context", {})
+                if not context and ("transactions" in body or "accounts" in body):
+                    context = {
+                        "transactions": body.get("transactions", []),
+                        "accounts": body.get("accounts", []),
+                        "debts": body.get("debts", [])
+                    }
+
                 history = body.get("history", [])
                 result = llm_provider.chat(message, context, history)
+
+                if path == "/api/coach":
+                    self._send_json_response(200, {
+                        "success": True,
+                        "answer": result.get("reply") or result.get("answer") or "Financial consultation completed.",
+                        "provider": result.get("provider", "heuristic"),
+                        "model": result.get("model", "default"),
+                        "is_offline_fallback": result.get("is_offline_fallback", False)
+                    })
+                    return
+
                 self._send_json_response(200, result)
 
             elif path == "/api/ai/insights":
@@ -135,7 +154,7 @@ class AIServerHandler(BaseHTTPRequestHandler):
 def run():
     parser = argparse.ArgumentParser(description="MONEY AI Coach Backend Server")
     parser.add_argument("--port", type=int, default=int(os.getenv("PORT", "5005")), help="Server port (default: 5005)")
-    parser.add_argument("--host", type=str, default=os.getenv("HOST", "127.0.0.1"), help="Host address (default: 127.0.0.1)")
+    parser.add_argument("--host", type=str, default=os.getenv("HOST", "0.0.0.0"), help="Host address (default: 0.0.0.0)")
     args = parser.parse_args()
 
     port = args.port

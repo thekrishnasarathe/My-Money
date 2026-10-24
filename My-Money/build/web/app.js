@@ -28,6 +28,7 @@ class Money3DApp {
     this.users = JSON.parse(localStorage.getItem('money_users')) || [];
     this.currentUser = JSON.parse(localStorage.getItem('money_active_user')) || null;
     this.apiKey = localStorage.getItem('money_gemini_key') || '';
+    this.backendUrl = localStorage.getItem('money_backend_url') || '';
     this.chatHistory = [];
     
     this.state = {
@@ -352,19 +353,30 @@ class Money3DApp {
   openApiKeyModal() {
     const modal = document.getElementById('ai-key-modal');
     const input = document.getElementById('input-gemini-key');
+    const backendInput = document.getElementById('input-backend-url');
     if (input) input.value = this.apiKey || '';
+    if (backendInput) backendInput.value = this.backendUrl || '';
     if (modal) modal.classList.add('open');
   }
 
-  saveApiKey(key) {
+  saveApiKey(key, backendUrl) {
     this.apiKey = (key || '').trim();
+    this.backendUrl = (backendUrl || '').trim();
+
     if (this.apiKey) {
       localStorage.setItem('money_gemini_key', this.apiKey);
-      this.showToast('Gemini API Key saved! Live Cloud LLM active.');
     } else {
       localStorage.removeItem('money_gemini_key');
-      this.showToast('Switched to built-in Heuristic Core.');
     }
+
+    if (this.backendUrl) {
+      localStorage.setItem('money_backend_url', this.backendUrl);
+      this.showToast('Cloud Backend URL saved: ' + this.backendUrl);
+    } else {
+      localStorage.removeItem('money_backend_url');
+      this.showToast('Using local/relative backend.');
+    }
+
     this.updateAiProviderBadge();
     const modal = document.getElementById('ai-key-modal');
     if (modal) modal.classList.remove('open');
@@ -372,11 +384,15 @@ class Money3DApp {
 
   removeApiKey() {
     this.apiKey = '';
+    this.backendUrl = '';
     localStorage.removeItem('money_gemini_key');
+    localStorage.removeItem('money_backend_url');
     const input = document.getElementById('input-gemini-key');
+    const backendInput = document.getElementById('input-backend-url');
     if (input) input.value = '';
+    if (backendInput) backendInput.value = '';
     this.updateAiProviderBadge();
-    this.showToast('Removed API Key. Using built-in Math Core.');
+    this.showToast('Reset AI settings to built-in Math Core.');
     const modal = document.getElementById('ai-key-modal');
     if (modal) modal.classList.remove('open');
   }
@@ -800,7 +816,9 @@ class Money3DApp {
     }
 
     try {
-      const resp = await fetch('/api/coach', {
+      const baseUrl = (this.backendUrl || '').trim().replace(/\/$/, '');
+      const endpoint = baseUrl ? `${baseUrl}/api/coach` : '/api/coach';
+      const resp = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1041,7 +1059,8 @@ class Money3DApp {
       aiKeyForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const key = document.getElementById('input-gemini-key').value;
-        this.saveApiKey(key);
+        const backendUrl = document.getElementById('input-backend-url') ? document.getElementById('input-backend-url').value : '';
+        this.saveApiKey(key, backendUrl);
       });
     }
 
